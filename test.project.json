@@ -1,0 +1,29 @@
+{
+  "name": "KarateSmashTests",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "src/server",
+      "Phase1Tests": {
+        "$path": "tests/Phase1Tests.server.luau"
+      }
+    },
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "src/client",
+        "Phase1TestClient": {
+          "$path": "tests/Phase1TestClient.client.luau"
+        }
+      }
+    }
+  }
+}

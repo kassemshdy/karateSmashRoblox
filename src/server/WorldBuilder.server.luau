@@ -67,6 +67,10 @@ makeTrainingPad("Kick Pad", Vector3.new(14, 3.5, 4), 2)
 
 local gate = makePart("YellowBeltGate", Vector3.new(16, 12, 1), Vector3.new(0, 6, -15), Enum.Material.Metal)
 gate:SetAttribute("RequiredPoints", 20)
+gate.Color = Color3.fromRGB(245, 205, 60)
+makePart("GateLeftWing", Vector3.new(32, 16, 1), Vector3.new(-24, 8, -15), Enum.Material.Wood)
+makePart("GateRightWing", Vector3.new(32, 16, 1), Vector3.new(24, 8, -15), Enum.Material.Wood)
+makePart("GateLintel", Vector3.new(16, 4, 1), Vector3.new(0, 14, -15), Enum.Material.Wood)
 
 local gateGui = Instance.new("BillboardGui")
 gateGui.Size = UDim2.fromOffset(260, 60)

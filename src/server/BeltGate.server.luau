@@ -1,32 +1,28 @@
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-
-local world = Workspace:WaitForChild("JawadKarateWorld")
+local Parts = require(script.Parent.Smash.Parts)
+local world = workspace:WaitForChild("JawadKarateWorld")
 local gate = world:WaitForChild("YellowBeltGate")
-local requiredPoints = gate:GetAttribute("RequiredPoints") or 20
-
 local cooldown = {}
 
+-- Keep the gate solid: a qualified player never opens it for other players.
 gate.Touched:Connect(function(hit)
-	local character = hit.Parent
-	local player = Players:GetPlayerFromCharacter(character)
-	if not player or cooldown[player] then
-		return
-	end
-
-	local leaderstats = player:FindFirstChild("leaderstats")
-	local points = leaderstats and leaderstats:FindFirstChild("KaratePoints")
-	if not points then
-		return
-	end
-
-	if points.Value >= requiredPoints then
-		cooldown[player] = true
-		gate.CanCollide = false
-		gate.Transparency = 0.75
-		task.wait(2)
-		gate.CanCollide = true
-		gate.Transparency = 0
-		cooldown[player] = nil
-	end
+    local character = hit:FindFirstAncestorOfClass("Model")
+    local player = character and Players:GetPlayerFromCharacter(character)
+    if not player then return end
+    local now = os.clock()
+    if now < (cooldown[player] or 0) then return end
+    local root = Parts.root(player)
+    local stats = player:FindFirstChild("leaderstats")
+    local points = stats and stats:FindFirstChild("KaratePoints")
+    if not root or not points or points.Value < (gate:GetAttribute("RequiredPoints") or 20) then return end
+    local localPosition = gate.CFrame:PointToObjectSpace(root.Position)
+    if math.abs(localPosition.X) > gate.Size.X / 2 + 3
+        or math.abs(localPosition.Y) > gate.Size.Y / 2 + 3
+        or math.abs(localPosition.Z) > gate.Size.Z / 2 + 4 then return end
+    cooldown[player] = now + 1
+    local destinationZ = localPosition.Z >= 0 and -(gate.Size.Z / 2 + 4) or (gate.Size.Z / 2 + 4)
+    local destination = gate.CFrame:PointToWorldSpace(Vector3.new(localPosition.X, localPosition.Y, destinationZ))
+    character:PivotTo(character:GetPivot() + (destination - root.Position))
 end)
+
+Players.PlayerRemoving:Connect(function(player) cooldown[player] = nil end)
