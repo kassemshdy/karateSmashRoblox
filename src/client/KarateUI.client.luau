@@ -41,6 +41,14 @@ title.Font = Enum.Font.GothamBold
 title.Text = "KARATE SMASH"
 local status = label("Progress", 38, 66, 14, Color3.fromRGB(245, 248, 255))
 local hint = label("Hint", 110, 44, 12, Color3.fromRGB(183, 202, 225))
+frame.Size = UDim2.fromOffset(260, 184)
+local saveStatus = label("SaveStatus", 162, 16, 11, Color3.fromRGB(183, 202, 225))
+local function refreshSaveStatus()
+    saveStatus.Text = player:GetAttribute("SaveStatus") or "Loading progress…"
+end
+player:GetAttributeChangedSignal("SaveStatus"):Connect(refreshSaveStatus)
+refreshSaveStatus()
+status.Text = "Loading your karate progress…"
 
 local stats = player:WaitForChild("leaderstats")
 local points = stats:WaitForChild("KaratePoints")

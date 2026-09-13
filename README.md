@@ -211,15 +211,19 @@ This uses Roblox's [StudioTestService](https://create.roblox.com/docs/reference/
 to launch two clients and end the test. The runner is a development-only tool;
 it is not required by the game or installed by this project.
 
-### Validation status (September 11, 2026)
+### Validation status (September 13, 2026)
 
-- The single-player Studio session passed real-remote tests for invalid request
-  rejection, a 50-request spam burst, punch/kick damage, and a single break reward.
-- The same session passed wall respawn, real prompt collection, base trophy updates,
-  and passive coin income. The game scripts produced no errors in that session.
-- Subsequent fixes add reliable dojo spawning, shared-walkway retention, training-pad
-  proximity checks, gate side walls, and a clearer HUD. Final Rojo builds and
-  whitespace checks pass; their final Studio regression run is still pending.
-- The two-player suite and mobile Device Emulator checks are prepared but not yet
-  verified. Native Studio control timed out, and automatic approval review blocked
-  running the downloaded test runner at Studio plugin-level security.
+- The final two-player Studio integration suite passed all nine test groups:
+  spawning/bases, remote validation/combat, owner-only collection, collection
+  distance/obstruction and income isolation, wall respawn/attack geometry, belt
+  boundaries, death/respawn, drop expiry, and departure cleanup.
+- The runner completed with `PHASE1_ALL_TESTS_PASSED` and exit code 0. The test
+  intentionally disconnects one client; its “Server Kick Message” is expected.
+  See `tests/VALIDATION.md` for the recorded output.
+- Production and test Rojo builds and whitespace checks pass. Test-only scripts
+  are excluded from the production place.
+- Keyboard/mouse and mobile touch bindings are implemented. Visual testing in
+  the mobile Device Emulator remains unverified because the native computer-use
+  connection could not start. Manual gate and training-pad acceptance checks
+  above remain available for those mechanics outside the automated suite.
+- Progress is session-only; DataStore saving and offline earnings are not included.

@@ -13,6 +13,10 @@ control.OnClientEvent:Connect(function(id, command, value)
         elseif command == "Attack" then
             attack:FireServer(value)
         elseif command == "Collect" then
+            local root = game.Players.LocalPlayer.Character.HumanoidRootPart
+            workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+            workspace.CurrentCamera.CFrame = CFrame.lookAt(root.Position + Vector3.new(0, 3, 6), value.Position)
+            task.wait(0.2)
             local prompt = value:FindFirstChildOfClass("ProximityPrompt")
             assert(prompt, "Missing prompt")
             prompt:InputHoldBegin()

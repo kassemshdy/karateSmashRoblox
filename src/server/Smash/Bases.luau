@@ -8,7 +8,7 @@ local walkways = {}
 
 function Bases.addTrophy(player)
     local record = records[player]
-    if not record then return false end
+    if not record or not player:GetAttribute("DataReady") then return false end
     record.count += 1
     player:SetAttribute("Trophies", record.count)
     player:SetAttribute("CoinsPerTick", record.count * Config.CoinsPerTrophy)
@@ -19,7 +19,8 @@ end
 
 function Bases.start(world)
     local function add(player)
-        if records[player] then return end
+        while player.Parent == Players and not player:GetAttribute("DataReady") do task.wait(0.1) end
+        if player.Parent ~= Players or records[player] then return end
         local slot = 1
         while slots[slot] do slot += 1 end
         slots[slot] = player
@@ -37,9 +38,13 @@ function Bases.start(world)
         trophy.Transparency = 1
         trophy.CanCollide = false
         local label = Parts.label(floor, player.DisplayName .. "'s Base\nCollect a wall trophy!")
-        records[player] = { model = model, label = label, trophy = trophy, count = 0, slot = slot }
-        player:SetAttribute("Trophies", 0)
-        player:SetAttribute("CoinsPerTick", 0)
+        local count = player:GetAttribute("Trophies") or 0
+        records[player] = { model = model, label = label, trophy = trophy, count = count, slot = slot }
+        player:SetAttribute("CoinsPerTick", count * Config.CoinsPerTrophy)
+        if count > 0 then
+            trophy.Transparency = 0
+            label.Text = player.DisplayName .. "'s Base\n" .. count .. " trophies"
+        end
         player:SetAttribute("BasePosition", position)
     end
     Players.PlayerAdded:Connect(add)
@@ -51,14 +56,14 @@ function Bases.start(world)
             records[player] = nil
         end
     end)
-    for _, player in Players:GetPlayers() do add(player) end
+    for _, player in Players:GetPlayers() do task.spawn(add, player) end
     task.spawn(function()
         while world.Parent do
             task.wait(Config.CoinInterval)
             for player, record in pairs(records) do
                 local stats = player:FindFirstChild("leaderstats")
                 local coins = stats and stats:FindFirstChild("Coins")
-                if coins then coins.Value += record.count * Config.CoinsPerTrophy end
+                if coins and player:GetAttribute("DataReady") then coins.Value += record.count * Config.CoinsPerTrophy end
             end
         end
     end)

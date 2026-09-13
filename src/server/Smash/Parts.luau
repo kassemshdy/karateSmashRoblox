@@ -30,6 +30,7 @@ function Parts.label(part, text)
 end
 
 function Parts.root(player)
+    if not player:GetAttribute("DataReady") then return nil end
     local character = player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
