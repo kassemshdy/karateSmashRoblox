@@ -126,6 +126,7 @@ local function run()
         assert(first.Belt.Value == sample[2], "Belt threshold failed")
     end
     pass("all belt thresholds and boundary values")
+    place(second, Vector3.new(25, 4, 2))
     second.Character.Humanoid.Health = 0
     command(second, "Attack", "Kick")
     assert(world.SmashWall3:GetAttribute("HP") == Config.WallHP, "Dead player attacked")
@@ -152,3 +153,8 @@ local function run()
 end
 local ok, message = xpcall(run, debug.traceback)
 if not ok then warn("PHASE1_TEST_FAILED: " .. message) end
+
+local studioTests = game:GetService("StudioTestService")
+if studioTests:GetTestArgs() == "KaratePhase1" then
+    studioTests:EndTest(ok and "PHASE1_ALL_TESTS_PASSED" or ("PHASE1_TEST_FAILED: " .. tostring(message)))
+end

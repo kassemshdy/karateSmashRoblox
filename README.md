@@ -9,6 +9,7 @@ Starter Roblox game project using **Rojo + Luau**.
 - Reusable training-pad system using Roblox tags
 - Basic on-screen HUD
 - Automatically generated starter dojo
+- Karate Smash: punch/kick, wall HP, collectible trophies, player bases, passive coins
 - Yellow Belt gate at 20 points
 - Codex instructions in `AGENTS.md`
 - Rojo project configuration
@@ -30,7 +31,7 @@ Then open Roblox Studio, open your place, open the **Rojo** plugin, and connect 
 
 ## First run
 
-After Rojo connects, press **Play** in Roblox Studio. The starter scripts automatically generate a simple dojo with a spawn point, Punch Pad, Kick Pad, Yellow Belt gate, and Jawad Karate sign.
+After Rojo connects, press **Play** in Roblox Studio. Scripts generate the dojo, training pads, three Smash Walls, a Yellow Belt gate, and a personal base for each player. Players spawn in the dojo even when the existing place contains another spawn. Shared base walkways remain when players leave.
 
 ## Create additional training pads in Roblox Studio
 
@@ -129,7 +130,8 @@ Phase 1 adds a complete session-based smash-and-collect loop to the starter dojo
    shows the total. Each trophy earns **1 Coin every 5 seconds** while connected.
 5. Karate Points still advance belts at **0 / 20 / 50 / 75 / 100**. Existing training
    pads and the Yellow Belt gate remain available. Gate passage is checked per player;
-   a qualified player no longer opens it for everyone. Coins are separate from points.
+   a qualified player no longer opens it for everyone. Side walls close the walking
+   bypass around the gate. Coins are separate from points.
 
 The HUD shows coins, trophies, income, and belt progress. Bases and uncollected
 owned drops are removed when their owner leaves. Coins, trophies, points, and
@@ -178,3 +180,46 @@ Studio acceptance checks (use **Test → Start** with two players for multiplaye
 - Verify White, Yellow, Green, Brown, Black at 0, 20, 50, 75, 100 points, including
   training-pad rewards. Test the Yellow gate and mobile controls in Device Emulator.
 - Watch Studio Output for script errors during play, respawn, and player departure.
+
+
+### Automated two-player integration tests
+
+The separate `test.project.json` includes the game plus Studio-only test scripts.
+The normal `default.project.json` excludes those scripts and their test remote.
+The suite automatically positions test players, exercises the real attack remote
+and collection prompts, checks server state, and disconnects one test player to
+verify cleanup. Use a disposable local Studio test session.
+
+```bash
+rojo build test.project.json -o /tmp/karate-smash-tests.rbxlx
+```
+
+Open that file in Studio and start **Server and Clients** with **2 clients**.
+The server Output reports `PHASE1_PASS` per group and
+`PHASE1_ALL_TESTS_PASSED` on success, or `PHASE1_TEST_FAILED` with a traceback.
+The suite takes roughly one minute after both clients connect; it includes a
+30-second drop-expiry check. Do not move the test characters during the run.
+
+If you already use the optional [Rojo test runner](https://github.com/rojo-rbx/run-in-roblox),
+the equivalent automated command is:
+
+```bash
+run-in-roblox --place /tmp/karate-smash-tests.rbxlx --script tests/run-studio.luau
+```
+
+This uses Roblox's [StudioTestService](https://create.roblox.com/docs/reference/engine/classes/StudioTestService)
+to launch two clients and end the test. The runner is a development-only tool;
+it is not required by the game or installed by this project.
+
+### Validation status (September 11, 2026)
+
+- The single-player Studio session passed real-remote tests for invalid request
+  rejection, a 50-request spam burst, punch/kick damage, and a single break reward.
+- The same session passed wall respawn, real prompt collection, base trophy updates,
+  and passive coin income. The game scripts produced no errors in that session.
+- Subsequent fixes add reliable dojo spawning, shared-walkway retention, training-pad
+  proximity checks, gate side walls, and a clearer HUD. Final Rojo builds and
+  whitespace checks pass; their final Studio regression run is still pending.
+- The two-player suite and mobile Device Emulator checks are prepared but not yet
+  verified. Native Studio control timed out, and automatic approval review blocked
+  running the downloaded test runner at Studio plugin-level security.
