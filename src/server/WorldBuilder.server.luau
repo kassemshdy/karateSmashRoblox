@@ -1,106 +1,59 @@
 local CollectionService = game:GetService("CollectionService")
-local Workspace = game:GetService("Workspace")
-
-local WORLD_NAME = "JawadKarateWorld"
-
-local existing = Workspace:FindFirstChild(WORLD_NAME)
-if existing then
-	existing:Destroy()
+local Theme = require(game.ReplicatedStorage.Shared.Theme)
+local S = require(script.Parent.World.Scenery)
+local Parts = require(script.Parent.Smash.Parts)
+local world = workspace:FindFirstChild("JawadKarateWorld")
+if world then world:Destroy() end
+world = Instance.new("Folder")
+world.Name = "JawadKarateWorld"
+world.Parent = workspace
+local function solid(name, size, pos, color, material)
+    return S.part(world, name, size, pos, color, material, true)
 end
-
-local world = Instance.new("Folder")
-world.Name = WORLD_NAME
-world.Parent = Workspace
-
-local function makePart(name, size, position, material, parent)
-	local part = Instance.new("Part")
-	part.Name = name
-	part.Size = size
-	part.Position = position
-	part.Anchored = true
-	part.Material = material or Enum.Material.SmoothPlastic
-	part.Parent = parent or world
-	return part
-end
-
-local floor = makePart("DojoFloor", Vector3.new(80, 1, 60), Vector3.new(0, 0, 0), Enum.Material.WoodPlanks)
-
-local backWall = makePart("BackWall", Vector3.new(80, 16, 1), Vector3.new(0, 8, -30), Enum.Material.Wood)
-local leftWall = makePart("LeftWall", Vector3.new(1, 16, 60), Vector3.new(-40, 8, 0), Enum.Material.Wood)
-local rightWall = makePart("RightWall", Vector3.new(1, 16, 60), Vector3.new(40, 8, 0), Enum.Material.Wood)
-
+solid("DojoFloor", Vector3.new(80, 1, 60), Vector3.new(0, 0, 0), Theme.Stone, Enum.Material.Slate)
+solid("BackWall", Vector3.new(80, 16, 1), Vector3.new(0, 8, -30), Theme.Cream)
+solid("LeftWall", Vector3.new(1, 16, 60), Vector3.new(-40, 8, 0), Theme.Stone)
+solid("RightWall", Vector3.new(1, 16, 60), Vector3.new(40, 8, 0), Theme.Stone)
 local spawn = Instance.new("SpawnLocation")
 spawn.Name = "KarateSpawn"
 spawn.Size = Vector3.new(6, 1, 6)
 spawn.Position = Vector3.new(0, 1, 22)
 spawn.Anchored = true
 spawn.Neutral = true
+spawn.Transparency = 1
+spawn.CanCollide = false
+spawn.Duration = 0
 spawn.Parent = world
 
-local function makeTrainingPad(name, position, reward)
-	local pad = makePart(name, Vector3.new(5, 6, 2), position, Enum.Material.SmoothPlastic)
-	pad:SetAttribute("PointsReward", reward)
-	pad:SetAttribute("Cooldown", 1)
-	CollectionService:AddTag(pad, "KarateTrainingPad")
-
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "Label"
-	gui.Size = UDim2.fromOffset(180, 50)
-	gui.StudsOffset = Vector3.new(0, 4.5, 0)
-	gui.AlwaysOnTop = true
-	gui.Parent = pad
-
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 1)
-	label.BackgroundTransparency = 1
-	label.TextScaled = true
-	label.Font = Enum.Font.GothamBold
-	label.Text = name .. "  +" .. tostring(reward)
-	label.TextColor3 = Color3.fromRGB(255, 255, 255)
-	label.Parent = gui
-
-	return pad
+local function training(name, x, reward, color)
+    local pad = solid(name, Vector3.new(3, 6, 2), Vector3.new(x, 3.5, 4), color, Enum.Material.Fabric)
+    pad.CanTouch = true
+    pad:SetAttribute("PointsReward", reward)
+    pad:SetAttribute("Cooldown", 1)
+    CollectionService:AddTag(pad, "KarateTrainingPad")
+    local marker = S.part(pad, "Target", Vector3.new(0.12, 1.8, 1.8), pad.Position + Vector3.new(0, 0.6, 1.06), Theme.Gold)
+    marker.Shape = Enum.PartType.Cylinder
+    marker.CFrame = CFrame.new(marker.Position) * CFrame.Angles(0, math.rad(90), 0)
+    Parts.label(pad, name:upper() .. "\nTRAIN  +" .. reward .. " POINTS")
 end
-
-makeTrainingPad("Punch Pad", Vector3.new(-14, 3.5, 4), 1)
-makeTrainingPad("Kick Pad", Vector3.new(14, 3.5, 4), 2)
-
-local gate = makePart("YellowBeltGate", Vector3.new(16, 12, 1), Vector3.new(0, 6, -15), Enum.Material.Metal)
+training("Punch Pad", -14, 1, Theme.Red)
+training("Kick Pad", 14, 2, Theme.Navy)
+local gate = solid("YellowBeltGate", Vector3.new(16, 12, 1), Vector3.new(0, 6, -15), Theme.Gold, Enum.Material.Wood)
+gate.CanTouch = true
 gate:SetAttribute("RequiredPoints", 20)
-gate.Color = Color3.fromRGB(245, 205, 60)
-makePart("GateLeftWing", Vector3.new(32, 16, 1), Vector3.new(-24, 8, -15), Enum.Material.Wood)
-makePart("GateRightWing", Vector3.new(32, 16, 1), Vector3.new(24, 8, -15), Enum.Material.Wood)
-makePart("GateLintel", Vector3.new(16, 4, 1), Vector3.new(0, 14, -15), Enum.Material.Wood)
-
-local gateGui = Instance.new("BillboardGui")
-gateGui.Size = UDim2.fromOffset(260, 60)
-gateGui.StudsOffset = Vector3.new(0, 7, 0)
-gateGui.AlwaysOnTop = true
-gateGui.Parent = gate
-
-local gateLabel = Instance.new("TextLabel")
-gateLabel.Size = UDim2.fromScale(1, 1)
-gateLabel.BackgroundTransparency = 1
-gateLabel.TextScaled = true
-gateLabel.Font = Enum.Font.GothamBold
-gateLabel.Text = "YELLOW BELT • 20 POINTS"
-gateLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-gateLabel.Parent = gateGui
-
-local senseiPlatform = makePart("SenseiPlatform", Vector3.new(16, 1, 10), Vector3.new(0, 1, -23), Enum.Material.WoodPlanks)
-
-local sign = makePart("DojoSign", Vector3.new(20, 5, 1), Vector3.new(0, 10, -29), Enum.Material.Wood)
-local signGui = Instance.new("SurfaceGui")
-signGui.Face = Enum.NormalId.Front
-signGui.Parent = sign
-
-local signText = Instance.new("TextLabel")
-signText.Size = UDim2.fromScale(1, 1)
-signText.BackgroundTransparency = 1
-signText.TextScaled = true
-signText.Font = Enum.Font.GothamBlack
-signText.Text = "JAWAD KARATE"
-signText.TextColor3 = Color3.fromRGB(255, 255, 255)
-signText.Parent = signGui
-
-print("Jawad Karate dojo generated")
+for _, x in { -24, 24 } do
+    solid(x < 0 and "GateLeftWing" or "GateRightWing", Vector3.new(32, 16, 1), Vector3.new(x, 8, -15), Theme.Cream)
+    for offset = -12, 12, 4 do
+        S.part(world, "TimberSlat", Vector3.new(0.25, 12, 0.2), Vector3.new(x + offset, 8, -14.4), Theme.Wood)
+    end
+end
+solid("GateLintel", Vector3.new(16, 4, 1), Vector3.new(0, 14, -15), Theme.Red)
+S.sign(world, "GateTitle", Vector3.new(0, 14, -14.3), Vector3.new(15, 2.4, 0.2), "YELLOW BELT • 20 POINTS", Theme.Red)
+for _, x in { -7.5, 0, 7.5 } do
+    S.part(gate, "GateTrim", Vector3.new(0.3, 12, 0.2), Vector3.new(x, 6, -14.4), Theme.Wood)
+end
+solid("SenseiPlatform", Vector3.new(16, 1, 10), Vector3.new(0, 1, -23), Theme.Wood, Enum.Material.WoodPlanks)
+require(script.Parent.World.Dojo).decorate(world)
+-- Published last: other systems use this name as the world-ready marker.
+S.sign(world, "DojoSign", Vector3.new(0, 19, -8.5), Vector3.new(27, 3.5, 0.6), "JAWAD'S DOJO", Theme.Navy)
+print("Karate Smash courtyard generated")

@@ -4,6 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BeltConfig = require(ReplicatedStorage.Shared.BeltConfig)
 
 local function watchPlayer(player)
+    while player.Parent == Players and not player:GetAttribute("DataReady") do task.wait(0.1) end
+    if player.Parent ~= Players then return end
     local leaderstats = player:WaitForChild("leaderstats")
     local points = leaderstats:WaitForChild("KaratePoints")
     local belt = player:WaitForChild("Belt")

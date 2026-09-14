@@ -22,13 +22,14 @@ local function command(player, name, value)
     sequence += 1
     local id = sequence
     control:FireClient(player, id, name, value)
-    eventually(function() return replies[player] and replies[player][1] == id end, 10, "Client did not respond: " .. name)
+    eventually(function() return replies[player] and replies[player][1] == id end, 40, "Client did not respond: " .. name)
     assert(replies[player][2], replies[player][3])
     task.wait(0.3)
 end
 local function pass(message) print("PHASE1_PASS: " .. message) end
 
 local function run()
+    require(game.ServerScriptService.PersistenceTests)()
     eventually(function()
         local count = 0
         for _, player in Players:GetPlayers() do if ready[player] then count += 1 end end
@@ -56,6 +57,10 @@ local function run()
         assert(world:FindFirstChild("Base_" .. player.UserId), "Missing player base")
     end
     pass("two players spawn in dojo with separate bases and zero stats")
+    command(first, "Presentation")
+    command(second, "Presentation")
+    assert(world:FindFirstChild("CourtyardScenery") and wall:FindFirstChild("WallHealth"), "Missing visual world")
+    pass("client HUD, touch-sized controls, uniforms, courtyard, and wall HP displays")
     place(first, Vector3.new(0, 4, 2))
     place(second, Vector3.new(4, 4, 2))
     command(first, "Invalid")

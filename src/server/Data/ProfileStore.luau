@@ -27,7 +27,10 @@ end
 function ProfileStore:update(key, transform)
     for attempt = 1, self.config.RetryAttempts do
         local ok, result = pcall(function() return self.adapter:UpdateAsync(key, transform) end)
-        if ok then return result, result and nil or "Rejected" end
+        if ok then
+            if result then return result end
+            return nil, "Rejected"
+        end
         if attempt < self.config.RetryAttempts then self.pause(attempt) end
     end
     return nil, "Unavailable"
@@ -46,7 +49,8 @@ function ProfileStore:load(key, token)
         data.Session = { Token = token, Expires = self.clock() + self.config.LeaseSeconds }
         return data
     end)
-    return result, result and nil or (reason or failure)
+    if result then return result end
+    return nil, reason or failure
 end
 
 function ProfileStore:save(key, token, snapshot, release)

@@ -30,6 +30,12 @@ attackEvent.OnServerEvent:Connect(function(player, attackName)
     -- One shared cooldown prevents alternating attacks from bypassing the limit.
     nextAttack[player] = now + attack.Cooldown
     local result = Walls.hit(player, attack)
-    feedback:FireClient(player, attackName, result)
+    for _, viewer in Players:GetPlayers() do
+        local viewerRoot = Parts.root(viewer)
+        local actorRoot = Parts.root(player)
+        if viewerRoot and actorRoot and (viewerRoot.Position - actorRoot.Position).Magnitude <= 100 then
+            feedback:FireClient(viewer, player.UserId, attackName, result)
+        end
+    end
 end)
 Players.PlayerRemoving:Connect(function(player) nextAttack[player] = nil end)

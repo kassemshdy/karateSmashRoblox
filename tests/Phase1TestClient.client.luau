@@ -5,7 +5,22 @@ local control = ReplicatedStorage:WaitForChild("Phase1TestControl")
 local attack = ReplicatedStorage:WaitForChild("KarateSmash"):WaitForChild("Attack")
 control.OnClientEvent:Connect(function(id, command, value)
     local ok, message = pcall(function()
-        if command == "Invalid" then
+        if command == "Presentation" then
+            local player = game.Players.LocalPlayer
+            local hud = player.PlayerGui:WaitForChild("KarateHUD", 10)
+            local controls = player.PlayerGui:WaitForChild("KarateControls", 10)
+            assert(hud and hud:FindFirstChild("ProgressCard") and hud:FindFirstChild("Wallet"), "HUD did not initialize")
+            assert(controls and controls:FindFirstChild("Actions"), "Combat buttons did not initialize")
+            assert(player.Character:WaitForChild("KarateUniform", 10), "Missing uniform")
+            for _, name in { "Punch", "Kick" } do
+                local button = controls.Actions:FindFirstChild(name)
+                assert(button and button:IsA("TextButton"), "Missing action button")
+                assert(button.AbsoluteSize.X >= 64 and button.AbsoluteSize.Y >= 64, "Touch target too small")
+                local endPoint = button.AbsolutePosition + button.AbsoluteSize
+                local viewport = workspace.CurrentCamera.ViewportSize
+                assert(button.AbsolutePosition.X >= 0 and button.AbsolutePosition.Y >= 0 and endPoint.X <= viewport.X and endPoint.Y <= viewport.Y, "Action button off screen")
+            end
+        elseif command == "Invalid" then
             attack:FireServer("Invalid", 999999)
             attack:FireServer({ Damage = 999999 })
         elseif command == "Spam" then

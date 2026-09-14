@@ -7,6 +7,9 @@
       "$path": "src/server",
       "Phase1Tests": {
         "$path": "tests/Phase1Tests.server.luau"
+      },
+      "PersistenceTests": {
+        "$path": "tests/PersistenceTests.luau"
       }
     },
     "ReplicatedStorage": {

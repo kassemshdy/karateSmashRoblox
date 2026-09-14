@@ -1,6 +1,8 @@
 local Players = game:GetService("Players")
 local Config = require(game:GetService("ReplicatedStorage").Shared.SmashConfig)
 local Parts = require(script.Parent.Parts)
+local Scenery = require(script.Parent.Parent.World.Scenery)
+local Theme = require(game.ReplicatedStorage.Shared.Theme)
 local Bases = {}
 local records = {}
 local slots = {}
@@ -13,7 +15,7 @@ function Bases.addTrophy(player)
     player:SetAttribute("Trophies", record.count)
     player:SetAttribute("CoinsPerTick", record.count * Config.CoinsPerTrophy)
     record.label.Text = player.DisplayName .. "'s Base\n" .. record.count .. " trophies"
-    record.trophy.Transparency = 0
+    Scenery.showTrophy(record.trophy, true)
     return true
 end
 
@@ -33,16 +35,17 @@ function Bases.start(world)
         if not walkways[slot] then
             walkways[slot] = Parts.make(world, "BaseWalkway" .. slot, Vector3.new(18, 1, 12), position + Vector3.new(0, 0, -12), Color3.fromRGB(110, 120, 130))
         end
-        local floor = Parts.make(model, "Base", Vector3.new(16, 1, 16), position, Color3.fromRGB(70, 130, 180))
-        local trophy = Parts.make(model, "TrophyDisplay", Vector3.new(2, 3, 2), position + Vector3.new(0, 2, 0), Color3.fromRGB(255, 210, 70))
-        trophy.Transparency = 1
-        trophy.CanCollide = false
+        local floor = Parts.make(model, "Base", Vector3.new(16, 1, 16), position, Theme.Cream)
+        floor.Material = Enum.Material.WoodPlanks
+        local trophy = Scenery.base(model, position)
+        Scenery.showTrophy(trophy, false)
         local label = Parts.label(floor, player.DisplayName .. "'s Base\nCollect a wall trophy!")
+        label.Parent.StudsOffset = Vector3.new(0, 11.5, 0)
         local count = player:GetAttribute("Trophies") or 0
         records[player] = { model = model, label = label, trophy = trophy, count = count, slot = slot }
         player:SetAttribute("CoinsPerTick", count * Config.CoinsPerTrophy)
         if count > 0 then
-            trophy.Transparency = 0
+            Scenery.showTrophy(trophy, true)
             label.Text = player.DisplayName .. "'s Base\n" .. count .. " trophies"
         end
         player:SetAttribute("BasePosition", position)

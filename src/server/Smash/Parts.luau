@@ -13,15 +13,21 @@ end
 
 function Parts.label(part, text)
     local gui = Instance.new("BillboardGui")
-    gui.Size = UDim2.fromOffset(220, 64)
+    gui.Size = UDim2.fromOffset(190, 48)
+    gui.MaxDistance = 55
     gui.StudsOffset = Vector3.new(0, part.Size.Y / 2 + 2, 0)
-    gui.AlwaysOnTop = true
+    gui.AlwaysOnTop = false
     gui.Parent = part
     local label = Instance.new("TextLabel")
     label.Size = UDim2.fromScale(1, 1)
     label.BackgroundTransparency = 1
     label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextStrokeTransparency = 0.3
+    label.TextStrokeTransparency = 0.5
+    label.BackgroundColor3 = Color3.fromRGB(18, 32, 58)
+    label.BackgroundTransparency = 0.15
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = label
     label.Font = Enum.Font.GothamBold
     label.TextScaled = true
     label.Text = text

@@ -16,6 +16,7 @@ end
 local store = ProfileStore.new(adapter, Config)
 local Profiles = {}
 local records = {}
+local loading = {}
 local closing = false
 
 local function snapshot(player)
@@ -26,7 +27,7 @@ end
 
 function Profiles.save(player, release)
     local record = records[player]
-    if not record then return end
+    if not record or (record.closing and not release) then return end
     if release then
         record.closing = true
         player:SetAttribute("DataReady", false)
@@ -52,12 +53,14 @@ function Profiles.save(player, release)
 end
 
 function Profiles.load(player)
-    if records[player] or closing then return end
+    if records[player] or loading[player] or closing then return end
+    loading[player] = true
     player:SetAttribute("DataReady", false)
     player:SetAttribute("SaveStatus", "Loading progress…")
     local key = "Player_" .. player.UserId
     local token = HttpService:GenerateGUID(false)
     local data, failure = store:load(key, token)
+    loading[player] = nil
     if not data then
         player:SetAttribute("SaveStatus", "Load failed")
         player:Kick(failure == "SessionLocked" and "Your previous session is still saving. Please rejoin in a moment."

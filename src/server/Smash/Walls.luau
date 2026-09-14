@@ -1,6 +1,7 @@
 local Config = require(game:GetService("ReplicatedStorage").Shared.SmashConfig)
 local Parts = require(script.Parent.Parts)
 local Drops = require(script.Parent.Drops)
+local Display = require(script.Parent.Parent.World.WallDisplay)
 local Walls = {}
 local records = {}
 
@@ -9,7 +10,9 @@ function Walls.start(world)
         local wall = Parts.make(world, "SmashWall" .. index, Vector3.new(10, 8, 2), Vector3.new(x, 4.5, -5), Color3.fromRGB(215, 135, 80))
         wall:SetAttribute("MaxHP", Config.WallHP)
         wall:SetAttribute("HP", Config.WallHP)
-        records[wall] = { hp = Config.WallHP, label = Parts.label(wall, string.format("Smash Wall\n%d / %d HP", Config.WallHP, Config.WallHP)) }
+        local display = Display.create(wall)
+        Display.update(display, Config.WallHP, Config.WallHP)
+        records[wall] = { hp = Config.WallHP, display = display }
     end
 end
 
@@ -24,15 +27,15 @@ function Walls.hit(player, attack)
     local record = result and records[result.Instance]
     if not record or record.hp <= 0 then return nil end
     local wall = result.Instance
+    local damage = math.min(record.hp, attack.Damage)
     record.hp = math.max(0, record.hp - attack.Damage)
     wall:SetAttribute("HP", record.hp)
-    record.label.Text = string.format("Smash Wall\n%d / %d HP", record.hp, Config.WallHP)
+    Display.update(record.display, record.hp, Config.WallHP)
     if record.hp == 0 then
         -- Mark broken before rewarding so simultaneous attacks cannot pay twice.
         wall.CanCollide = false
         wall.CanQuery = false
         wall.Transparency = 1
-        record.label.Text = "Great smash!\nWall returning soon"
         local stats = player:FindFirstChild("leaderstats")
         local points = stats and stats:FindFirstChild("KaratePoints")
         if points then points.Value += Config.WallPoints end
@@ -44,10 +47,10 @@ function Walls.hit(player, attack)
             wall.CanCollide = true
             wall.CanQuery = true
             wall.Transparency = 0
-            record.label.Text = string.format("Smash Wall\n%d / %d HP", record.hp, Config.WallHP)
+            Display.update(record.display, record.hp, Config.WallHP)
         end)
     end
-    return { Position = result.Position, Broken = record.hp == 0, HP = record.hp }
+    return { Position = result.Position, Broken = record.hp == 0, HP = record.hp, Damage = damage }
 end
 
 return Walls
