@@ -106,3 +106,39 @@ The first regression attempt timed out waiting for both clients. A fresh run at
 script errors appeared. Production and test builds and whitespace checks pass.
 These checks verify normal client startup and button bounds; they do not replace
 Device Emulator or physical phone verification of the new responsive layouts.
+
+
+## Sensei tutorial
+
+September 14, 2026, 05:17 UTC: the two-player suite passed all 16 groups (five
+persistence and eleven gameplay/presentation/tutorial groups), exit code 0.
+The new group checks six lesson states, returning-player credit, and Sensei
+prompt initialization. Integration checks confirm a real server wall break
+advances the owning player's tutorial; both clients initialize the guide panel.
+
+The only logged script error was the intentional departure-test kick. Production
+and test Rojo builds and whitespace checks pass. The final dialogue height and
+expired-drop wording were adjusted after the run; these cosmetic changes were
+build-checked. Native visual review of the Sensei and physical Talk-button input
+remain manual checks.
+
+
+## Yellow Belt obby
+
+September 14, 2026, 05:25–05:27 UTC: the final two-player Studio run passed all
+18 groups, including two new obby groups, with exit code 0. The pure rule checks
+cover belt eligibility, ordered stages, minimum timing, duplicate finishes, and
+replay cooldown. The live-server test traverses the seven generated stages,
+rejects a White Belt start and a skipped finish, recovers from a fall at the
+halfway checkpoint, checks the checkpoint respawn destination, and verifies
+exactly 5 points and 10 coins on completion. Movement is driven by the test
+harness; this is not a manual jump-difficulty or touch-control playtest.
+
+The initial attempt caught a client button-bounds assertion during Studio's
+viewport initialization. That check now waits up to five seconds for layout to
+settle and still fails with position/viewport details if a button remains outside.
+
+The final logs contain only the expected departure-test kick, with no unexpected
+script errors or infinite-yield warnings. Production/test builds and whitespace
+checks pass; production excludes all test scripts. Manual checks remain for the
+course's visual layout, physical jumps, the exit prompt, and death/rejoin UX.

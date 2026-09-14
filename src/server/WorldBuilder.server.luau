@@ -11,7 +11,10 @@ local function solid(name, size, pos, color, material)
     return S.part(world, name, size, pos, color, material, true)
 end
 solid("DojoFloor", Vector3.new(80, 1, 60), Vector3.new(0, 0, 0), Theme.Stone, Enum.Material.Slate)
-solid("BackWall", Vector3.new(80, 16, 1), Vector3.new(0, 8, -30), Theme.Cream)
+-- A doorway connects the Yellow Belt area to the outdoor trial.
+solid("BackWall", Vector3.new(34, 16, 1), Vector3.new(-23, 8, -30), Theme.Cream)
+solid("BackWallRight", Vector3.new(34, 16, 1), Vector3.new(23, 8, -30), Theme.Cream)
+solid("BackDoorLintel", Vector3.new(12, 6, 1), Vector3.new(0, 13, -30), Theme.Red)
 solid("LeftWall", Vector3.new(1, 16, 60), Vector3.new(-40, 8, 0), Theme.Stone)
 solid("RightWall", Vector3.new(1, 16, 60), Vector3.new(40, 8, 0), Theme.Stone)
 local spawn = Instance.new("SpawnLocation")

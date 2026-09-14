@@ -1,3 +1,4 @@
+local Obby = require(script.Parent.Obby.Service)
 local Players = game:GetService("Players")
 local spawn = workspace:WaitForChild("JawadKarateWorld"):WaitForChild("KarateSpawn")
 
@@ -6,7 +7,7 @@ local function setup(player)
     local function placeCharacter(character)
         local root = character:WaitForChild("HumanoidRootPart", 10)
         if root and player.Character == character then
-            character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
+            character:PivotTo(Obby.respawn(player) or (spawn.CFrame + Vector3.new(0, 4, 0)))
         end
     end
     player.CharacterAdded:Connect(placeCharacter)

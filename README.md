@@ -340,3 +340,57 @@ progress/earnings cards; short landscape screens use smaller cards in opposite
 corners. Income and trophy counts remain visible on mobile. Punch/Kick buttons
 retain their 86 × 72 pixel touch targets and sit above the jump-control area.
 The objective banner hides on small screens to leave more room for gameplay.
+
+
+## Sensei tutorial
+
+A Sensei stands beside the entrance, accessible before earning any belt. New
+players see a welcome panel; press **Let's Practice** to close it. Approach the
+Sensei and press **E** or tap **Talk** to see the current lesson again.
+
+The guide follows first points → wall break → trophy collection → passive coins
+→ Yellow Belt. It updates from server-owned points, wall breaks, trophies, and
+coins. Talking never awards points or coins. The server validates talk distance,
+line of sight, a living character, and a one-second cooldown.
+
+Saved trophies and coins count toward lessons on rejoin. Uncollected wall breaks
+are session-only, so returning without a trophy asks you to smash another wall.
+No additional persistence fields or client reward remotes are introduced.
+
+`src/shared/TutorialConfig.luau` holds the lesson text. Server logic lives in
+`src/server/Tutorial/` and `KarateTutorial.server.luau`; the dialogue is in
+`src/client/KarateTutorial.client.luau`.
+
+
+The tutorial-enabled Studio suite passes **16 test groups**. Its production build
+remains `karate-smash-phase3.rbxl`; press Play to generate the dojo and Sensei.
+
+
+## Yellow Belt balance trial
+
+Earn 20 Karate Points, pass the Yellow Belt gate, and follow the stairs through
+the rear doorway. The seven-stage trial includes a narrow balance beam, a halfway
+rest platform, and alternating stepping stones. Standard Roblox movement/jump
+controls work on keyboard and touch.
+
+- Falling returns you to the last safe platform without losing points.
+- Death/respawn resumes an active trial from that checkpoint.
+- Finish in order to earn **5 Karate Points and 10 coins**, then return to the dojo.
+- Another rewarded run is available after 60 seconds. The start platform has a
+  **Return to dojo** prompt to leave an unfinished run.
+- The server samples live character positions, checks Yellow Belt eligibility,
+  ordered stages and minimum stage timing, rejects large position jumps, and
+  closes the run before rewarding. There is no client finish/reward remote.
+
+Checkpoint and cooldown state lasts for the current server session; earned points
+and coins use the existing save system. This is basic movement validation, not a
+complete teleport/flying anti-cheat. The server observes Roblox character movement.
+
+Tuning and platform positions are in `src/shared/ObbyConfig.luau`; course geometry,
+progress rules, and rewards are in `src/server/Obby/`. Build/open the existing
+`karate-smash-phase3.rbxl` to play the updated game.
+
+
+The obby-enabled two-player Studio suite passes **18 groups**, including ordered
+course traversal, skipped-finish rejection, fall recovery, exact rewards, and
+cooldown rules. See `tests/VALIDATION.md` for testing scope and manual checks.

@@ -35,7 +35,7 @@ function Dojo.decorate(world)
         S.lantern(decor, Vector3.new(x, 0, 25))
     end
     for _, x in { -60, -25, 20, 65 } do
-        local mountain = S.part(decor, "DistantMountain", Vector3.new(44, 65 + math.abs(x) / 2, 35), Vector3.new(x, 16, -80), Color3.fromRGB(115, 156, 172), Enum.Material.Slate)
+        local mountain = S.part(decor, "DistantMountain", Vector3.new(44, 65 + math.abs(x) / 2, 35), Vector3.new(x, 16, -125), Color3.fromRGB(115, 156, 172), Enum.Material.Slate)
         mountain.Shape = Enum.PartType.Ball
     end
 end

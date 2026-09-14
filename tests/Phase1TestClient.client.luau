@@ -9,6 +9,10 @@ control.OnClientEvent:Connect(function(id, command, value)
             local player = game.Players.LocalPlayer
             local hud = player.PlayerGui:WaitForChild("KarateHUD", 10)
             local controls = player.PlayerGui:WaitForChild("KarateControls", 10)
+            local guide = player.PlayerGui:WaitForChild("SenseiGuide", 10)
+            assert(guide and guide:FindFirstChild("Dialogue"), "Sensei guide did not initialize")
+            -- Keep the automated combat/prompt checks unobstructed by the welcome panel.
+            guide.Dialogue.Visible = false
             assert(hud and hud:FindFirstChild("ProgressCard") and hud:FindFirstChild("Wallet"), "HUD did not initialize")
             assert(controls and controls:FindFirstChild("Actions"), "Combat buttons did not initialize")
             assert(player.Character:WaitForChild("KarateUniform", 10), "Missing uniform")
@@ -16,9 +20,15 @@ control.OnClientEvent:Connect(function(id, command, value)
                 local button = controls.Actions:FindFirstChild(name)
                 assert(button and button:IsA("TextButton"), "Missing action button")
                 assert(button.AbsoluteSize.X >= 64 and button.AbsoluteSize.Y >= 64, "Touch target too small")
-                local endPoint = button.AbsolutePosition + button.AbsoluteSize
-                local viewport = workspace.CurrentCamera.ViewportSize
-                assert(button.AbsolutePosition.X >= 0 and button.AbsolutePosition.Y >= 0 and endPoint.X <= viewport.X and endPoint.Y <= viewport.Y, "Action button off screen")
+                local function fits()
+                    local endPoint = button.AbsolutePosition + button.AbsoluteSize
+                    local viewport = workspace.CurrentCamera.ViewportSize
+                    return button.AbsolutePosition.X >= 0 and button.AbsolutePosition.Y >= 0
+                        and endPoint.X <= viewport.X and endPoint.Y <= viewport.Y
+                end
+                local deadline = os.clock() + 5
+                while not fits() and os.clock() < deadline do task.wait(0.1) end
+                assert(fits(), "Action button off screen: " .. tostring(button.AbsolutePosition) .. " / " .. tostring(workspace.CurrentCamera.ViewportSize))
             end
         elseif command == "Invalid" then
             attack:FireServer("Invalid", 999999)

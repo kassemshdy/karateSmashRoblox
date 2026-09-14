@@ -10,6 +10,9 @@
       },
       "PersistenceTests": {
         "$path": "tests/PersistenceTests.luau"
+      },
+      "ObbyTests": {
+        "$path": "tests/ObbyTests.luau"
       }
     },
     "ReplicatedStorage": {

@@ -30,6 +30,7 @@ local function pass(message) print("PHASE1_PASS: " .. message) end
 
 local function run()
     require(game.ServerScriptService.PersistenceTests)()
+    require(game.ServerScriptService.ObbyTests)()
     eventually(function()
         local count = 0
         for _, player in Players:GetPlayers() do if ready[player] then count += 1 end end
@@ -57,6 +58,18 @@ local function run()
         assert(world:FindFirstChild("Base_" .. player.UserId), "Missing player base")
     end
     pass("two players spawn in dojo with separate bases and zero stats")
+    local tutorial = require(game.ServerScriptService.Tutorial.Progress)
+    local cases = {
+        { 0, 0, 0, 0, 1 }, { 1, 0, 0, 0, 2 }, { 5, 1, 0, 0, 3 },
+        { 5, 1, 1, 0, 4 }, { 5, 1, 1, 1, 5 }, { 20, 1, 1, 1, 6 },
+        { 20, 0, 1, 1, 6 }, -- saved collection restores tutorial credit
+    }
+    for _, values in cases do
+        assert(tutorial.stage(values[1], values[2], values[3], values[4]) == values[5], "Wrong tutorial stage")
+    end
+    assert(world:WaitForChild("Sensei", 10):FindFirstChild("Talk", true), "Missing Sensei prompt")
+    eventually(function() return first:GetAttribute("TutorialStage") == 1 end, 10, "Tutorial did not initialize")
+    pass("Sensei tutorial stages, returning-player credit, and prompt initialization")
     command(first, "Presentation")
     command(second, "Presentation")
     assert(world:FindFirstChild("CourtyardScenery") and wall:FindFirstChild("WallHealth"), "Missing visual world")
@@ -78,6 +91,7 @@ local function run()
     command(first, "Attack", "Kick")
     assert(first.leaderstats.KaratePoints.Value == 0 and second.leaderstats.KaratePoints.Value == 5, "Break paid twice/wrong player")
     pass("remote validation, punch/kick damage, spam cooldown, multiplayer final-hit reward")
+    eventually(function() return second:GetAttribute("TutorialStage") == 3 end, 5, "Wall break did not advance tutorial")
     local drop = world:FindFirstChild("TrophyDrop")
     assert(drop and drop:GetAttribute("OwnerUserId") == second.UserId)
     command(first, "Collect", drop)
@@ -132,6 +146,43 @@ local function run()
         assert(first.Belt.Value == sample[2], "Belt threshold failed")
     end
     pass("all belt thresholds and boundary values")
+    local obby = require(game.ServerScriptService.Obby.Service)
+    local obbyConfig = require(ReplicatedStorage.Shared.ObbyConfig)
+    local course = world:WaitForChild("YellowBeltObby")
+    assert(course:FindFirstChild("Stage7"), "Missing course finish")
+    first.leaderstats.KaratePoints.Value = 19
+    place(first, obbyConfig.Nodes[1].Position + Vector3.new(0, 4, 0))
+    assert(not first:GetAttribute("ObbyStage"), "White belt started course")
+    first.leaderstats.KaratePoints.Value = 20
+    task.wait(0.4)
+    assert(first:GetAttribute("ObbyStage") == 1, "Qualified player failed to start")
+    local beforePoints, beforeCoins = first.leaderstats.KaratePoints.Value, first.leaderstats.Coins.Value
+    place(first, obbyConfig.Nodes[7].Position + Vector3.new(0, 4, 0))
+    task.wait(0.3)
+    assert(first.leaderstats.KaratePoints.Value == beforePoints and first.leaderstats.Coins.Value == beforeCoins, "Skipped course paid reward")
+    local last = first.Character.HumanoidRootPart.Position
+    for index = 2, #obbyConfig.Nodes do
+        local destination = obbyConfig.Nodes[index].Position + Vector3.new(0, 4, 0)
+        for step = 1, 8 do
+            first.Character:PivotTo(CFrame.new(last:Lerp(destination, step / 8)))
+            task.wait(0.12)
+        end
+        task.wait(0.3)
+        last = destination
+        assert(first:GetAttribute("ObbyStage") == index, "Course stage did not advance")
+        if index == 3 then
+            place(first, Vector3.new(0, 2, -53))
+            task.wait(0.3)
+            assert((first.Character:GetPivot().Position - destination).Magnitude < 2, "Fall did not restore checkpoint")
+            assert(obby.respawn(first), "Active checkpoint not available on respawn")
+        end
+    end
+    assert(first.leaderstats.KaratePoints.Value == beforePoints + obbyConfig.RewardPoints, "Wrong obby point reward")
+    assert(first.leaderstats.Coins.Value == beforeCoins + obbyConfig.RewardCoins, "Wrong obby coin reward")
+    task.wait(2.2)
+    assert(not obby.respawn(first), "Completed course retained active checkpoint")
+    pass("obby geometry, skipped finish rejection, fall recovery, and one-time completion reward")
+    place(first, Vector3.new(0, 4, 20))
     place(second, Vector3.new(25, 4, 2))
     second.Character.Humanoid.Health = 0
     command(second, "Attack", "Kick")

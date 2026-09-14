@@ -32,6 +32,7 @@ function Walls.hit(player, attack)
     wall:SetAttribute("HP", record.hp)
     Display.update(record.display, record.hp, Config.WallHP)
     if record.hp == 0 then
+        player:SetAttribute("WallsBrokenSession", (player:GetAttribute("WallsBrokenSession") or 0) + 1)
         -- Mark broken before rewarding so simultaneous attacks cannot pay twice.
         wall.CanCollide = false
         wall.CanQuery = false

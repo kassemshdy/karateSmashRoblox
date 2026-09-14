@@ -1,0 +1,20 @@
+return function()
+    local Rules = require(game.ServerScriptService.Obby.Rules)
+    local Config = require(game.ReplicatedStorage.Shared.ObbyConfig)
+    local state = Rules.new()
+    assert(not Rules.advance(state, 1, 19, 0), "White belt started trial")
+    assert(not Rules.advance(state, #Config.Nodes, 20, 0), "Finish skipped start")
+    assert(Rules.advance(state, 1, 20, 1) == "Started")
+    assert(not Rules.advance(state, 3, 20, 2), "Skipped course stage")
+    assert(not Rules.advance(state, 2, 20, 1.1), "Instant progression accepted")
+    assert(Rules.advance(state, 2, 20, 2) == "Checkpoint")
+    assert(not Rules.advance(state, 3, 19, 3), "Lost eligibility accepted")
+    for index = 3, #Config.Nodes do
+        assert(Rules.advance(state, index, 20, index), "Ordered stage rejected")
+    end
+    assert(not state.Active and state.Stage == #Config.Nodes)
+    assert(not Rules.advance(state, #Config.Nodes, 20, 20), "Duplicate finish accepted")
+    assert(not Rules.advance(state, 1, 20, 20), "Replay cooldown bypassed")
+    assert(Rules.advance(state, 1, 20, #Config.Nodes + Config.ReplayCooldown) == "Started")
+    print("PHASE1_PASS: obby eligibility, ordered stages, timing, duplicate finish, replay cooldown")
+end
