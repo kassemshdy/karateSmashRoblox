@@ -226,3 +226,92 @@ One client logged Roblox's built-in ChatScript CoreGuiChatConnections startup
 error, and the departure-test kick was expected. Panel appearance, scrolling,
 and physical mouse/touch interaction remain manual checks; the automated suite
 does not verify the new panel's layout. Live cloud persistence remains unverified.
+
+
+## Training upgrades
+
+September 14, 2026, 17:56–17:58 UTC: all 26 test groups passed in the
+two-client Studio suite, exit code 0. New storage tests cover version-2 to
+version-3 migration, saved upgrade rejoin, corrupt/missing/unknown upgrade levels,
+and stale-session rejection. Version-1 migration remains covered by prior tests.
+
+Live purchase tests cover insufficient funds, malformed requests, exact prices,
+stale duplicate rejection, per-player isolation, maximum levels, unavailable
+profiles, and upgraded punch damage against the real dummy. Kick damage and
+shared-config immutability are also checked. Both clients initialize the shop.
+All prior combat, creatures, medals, obby, persistence, and cleanup checks pass.
+
+Production/test builds and whitespace checks pass. Production includes upgrades
+and excludes the test modules. No project-script errors, infinite-yield warnings,
+or sound-load failures were logged; the departure-test kick was expected.
+Physical shop-button interaction, visual layout on phones, economy pacing, and
+live cloud saving remain manual checks. Storage migration/rejoin tests use the
+injected in-memory adapter.
+
+
+## White player karate suit
+
+September 14, 2026, 18:02–18:04 UTC: all 27 groups passed with two Studio
+clients, exit code 0. Added R6/R15 checks for complete gi coverage, white starting
+belts, removal of classic/layered clothing, idempotent appearance cleanup, and
+earned belt recoloring. Existing real respawn and gameplay checks pass.
+
+The first fixture used a Part for a WrapLayer and was corrected to MeshPart.
+An intermediate run exposed avatar parenting warnings; clothing cleanup now
+defers until Roblox finishes parenting the item. The final run has no such
+warnings or project-script errors. The departure-test kick is expected.
+Production/test builds and whitespace checks pass. Visual fitting across unusual
+avatar packages and manual appearance review remain unverified.
+
+
+White-gi follow-up, September 14, 18:21–18:23 UTC: the complete 27-group
+suite passed again, exit code 0. Outfit tests now also assert covered avatar
+meshes are hidden and a changed torso size rebuilds the garment to fit. Added a
+front belt knot. No project-script errors or avatar-parenting warnings appeared;
+the departure-test kick was expected. Native screen capture failed, so visual
+matching to the Sensei is not claimed as verified.
+
+The user confirmed they were testing a previously saved/published place. Local
+changes do not update that place automatically. A distinctly named production
+build, Karate-Smash-White-Gi.rbxl, is provided for reopening and testing in Studio.
+No published place was modified.
+
+
+## Combat limb animation compatibility
+
+September 14, 2026: a focused two-client Studio run passed with exit code 0.
+The client tests punch/kick Transform changes and recovery for Motor6D and
+AnimationConstraint, then measures actual live arm and leg rotation relative to
+the character root on both clients. Initial focused testing needed a character
+spawn wait, which was added. CombatPose applies the pose at PreSimulation and
+restores before PreAnimation, avoiding accumulated offsets.
+
+Full-suite attempts stopped at the existing point-medal update check before
+reaching animation tests; one runner attempt also returned no test result. The
+full 28-group suite is therefore NOT recorded as passing for this change. No
+medal behavior was changed. A focused test project is retained for reproduction:
+`rojo build animation-test.project.json -o /tmp/karate-animation-tests.rbxlx`,
+then use the existing runner and tests/run-studio.luau. Manual visual review and
+physical button interaction remain unverified.
+
+
+## Complete animation recheck
+
+September 14, 2026, 18:30–18:32 UTC: all 28 groups passed in the full two-client
+Studio suite, exit code 0. Live arm/leg rotation is now triggered by the real
+Attack remote and server Feedback event, rather than directly calling the pose
+module. Synthetic joint tests still cover Motor6D and AnimationConstraint pose
+changes and restoration. White-gi, persistence, medals, and all gameplay
+regressions also pass.
+
+Diagnostic logging reproduced the medal failure: AncestryChanged fired during
+initial setup while player.Parent was still Players, disconnecting its listeners.
+Medal and tutorial cleanup now checks for actual departure before disconnecting.
+Temporary diagnostics were removed before the passing run. This resolves the
+full-suite blocker reported in the previous entry.
+
+Production and test builds and whitespace checks pass. No project-script errors
+or infinite-yield warnings were logged. One client logged the built-in ChatScript
+CoreGuiChatConnections startup error; the departure-test kick was expected.
+Manual visual review and physical touch/button interaction remain unverified.
+Published games were not changed; reopen the rebuilt local file to test it.

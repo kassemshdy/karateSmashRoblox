@@ -1,5 +1,16 @@
 # Karate Smash 🥋
 
+Players wear a white karate gi with pale lapels. New players start with a white
+belt; returning players wear their earned belt color. Avatar shirts, pants,
+layered clothing, and torso accessories are removed so they cannot cover the gi.
+Head appearance is retained. Both R6 and R15 rigs are supported. Covered avatar
+body meshes are hidden beneath the fabric, and the outfit refits if appearance
+loading changes body proportions. The belt includes a front knot.
+
+For the latest outfit and combat animation fixes, open **Karate-Smash-White-Gi.rbxl** using Studio
+**File → Open from File**, then press Play. Rebuilding a file does not update an
+already-open Studio place or a published game; reopen the file to load changes.
+
 A child-friendly Roblox karate game built with Luau and Rojo. Practice, break
 walls, collect creatures, build your base income, and advance belts.
 
@@ -106,6 +117,12 @@ and belt cues. The preference survives character respawns within the session.
 Bundled `rbxasset://sounds/` files require no uploads; Roblox's own avatar sounds
 are separate. A fixed pool of five Sound instances bounds audio resource use.
 
+Punch and kick use procedural limb poses compatible with Motor6D and
+AnimationConstraint avatar joints. The poses extend and recover over 0.36 seconds
+(punch) or 0.55 seconds (kick), including when striking air. Nearby clients play
+poses only for server-accepted attacks; damage, range, and cooldowns remain on the
+server. No uploaded animation assets are required.
+
 ## Saving and migration
 
 Published games save points, coins, existing trophy counts, per-species placed
@@ -179,6 +196,8 @@ run-in-roblox --place /tmp/karate-smash-tests.rbxlx --script tests/run-studio.lu
 
 `tests/VALIDATION.md` records actual runs and limitations. Local tests use injected
 in-memory storage for schema migration, retries, locking, and save/rejoin checks.
-The September 14 medals Studio run passed all 24 test groups with two clients.
+The September 14 recheck passed all 28 groups with two clients, including live
+arm/leg movement after server-approved attacks. The earlier medal-update failure
+was fixed by keeping progress listeners connected during initial parenting.
 Live cloud persistence, physical mobile controls, jump difficulty, and sound
 loudness require separate manual/device checks.

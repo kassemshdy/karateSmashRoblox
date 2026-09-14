@@ -10,7 +10,7 @@ local function add(player)
             task.wait(0.1)
         end
         local r15 = character:FindFirstChild("UpperTorso") ~= nil
-        local bodyNames = r15 and { "UpperTorso", "LowerTorso", "RightUpperArm", "LeftUpperArm", "RightUpperLeg", "LeftUpperLeg", "RightLowerLeg", "LeftLowerLeg" }
+        local bodyNames = r15 and { "UpperTorso", "LowerTorso", "RightUpperArm", "LeftUpperArm", "RightLowerArm", "LeftLowerArm", "RightUpperLeg", "LeftUpperLeg", "RightLowerLeg", "LeftLowerLeg" }
             or { "Torso", "Right Arm", "Left Arm", "Right Leg", "Left Leg" }
         for _, name in bodyNames do
             if not character:WaitForChild(name, 10) then return end
@@ -24,9 +24,18 @@ local function add(player)
         local belt = player:FindFirstChild("Belt")
         Uniform.dress(character, belt and belt.Value or "White")
     end
-    player.CharacterAdded:Connect(dress)
+    local function characterAdded(character)
+        character.ChildAdded:Connect(function(item)
+            -- Let Roblox finish parenting appearance items before removing them.
+            task.defer(function()
+                if item.Parent == character then Uniform.removeClothing(item) end
+            end)
+        end)
+        dress(character)
+    end
+    player.CharacterAdded:Connect(characterAdded)
     player.CharacterAppearanceLoaded:Connect(dress)
-    if player.Character then task.spawn(dress, player.Character) end
+    if player.Character then task.spawn(characterAdded, player.Character) end
     while player.Parent == Players and not player:GetAttribute("DataReady") do task.wait(0.1) end
     if player.Parent ~= Players then return end
     local belt = player:WaitForChild("Belt")

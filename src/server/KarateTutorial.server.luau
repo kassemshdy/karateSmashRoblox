@@ -36,7 +36,11 @@ local function add(player)
         player:GetAttributeChangedSignal("CollectionCount"):Connect(update),
         player:GetAttributeChangedSignal("WallsBrokenSession"):Connect(update),
     }
-    player.AncestryChanged:Once(function()
+    local ancestryConnection
+    ancestryConnection = player.AncestryChanged:Connect(function()
+        -- Initial parenting can notify after setup; only clean up on departure.
+        if player.Parent == Players then return end
+        ancestryConnection:Disconnect()
         for _, connection in connections do connection:Disconnect() end
     end)
     update()

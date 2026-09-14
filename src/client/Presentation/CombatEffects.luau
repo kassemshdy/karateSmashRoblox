@@ -1,6 +1,7 @@
 local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
 local Theme = require(game.ReplicatedStorage.Shared.Theme)
+local Pose = require(script.Parent.CombatPose)
 local Effects = {}
 local function effectPart(position, size, color)
     local part = Instance.new("Part")
@@ -20,16 +21,7 @@ function Effects.play(player, action, result)
     local character = player and player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
     if not root then return end
-    local jointName = action == "Kick" and "RightHip" or "RightShoulder"
-    local r6Name = action == "Kick" and "Right Hip" or "Right Shoulder"
-    local joint = character:FindFirstChild(jointName, true) or character:FindFirstChild(r6Name, true)
-    if joint and joint:IsA("Motor6D") then
-        local rest = joint.C0
-        TweenService:Create(joint, TweenInfo.new(0.08), { C0 = rest * CFrame.Angles(math.rad(action == "Kick" and 70 or 85), 0, 0) }):Play()
-        task.delay(0.13, function()
-            if joint.Parent then TweenService:Create(joint, TweenInfo.new(0.18), { C0 = rest }):Play() end
-        end)
-    end
+    Pose.play(character, action)
     local strike = effectPart(root.Position, Vector3.new(0.6, 0.6, 1.7), action == "Kick" and Theme.Cyan or Theme.Gold)
     strike.CFrame = root.CFrame * CFrame.new(0.7, action == "Kick" and -0.9 or 0.4, -2)
     strike.Material = Enum.Material.Neon

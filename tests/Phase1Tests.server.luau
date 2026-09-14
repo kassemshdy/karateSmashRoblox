@@ -29,6 +29,54 @@ end
 local function pass(message) print("PHASE1_PASS: " .. message) end
 
 local function run()
+    local Uniform = require(game.ServerScriptService.World.Uniform)
+    local Theme = require(ReplicatedStorage.Shared.Theme)
+    for _, names in {
+        { "Torso", "Right Arm", "Left Arm", "Right Leg", "Left Leg" },
+        { "UpperTorso", "LowerTorso", "RightUpperArm", "LeftUpperArm", "RightLowerArm", "LeftLowerArm", "RightUpperLeg", "LeftUpperLeg", "RightLowerLeg", "LeftLowerLeg" },
+    } do
+        local rig = Instance.new("Model")
+        for _, name in names do
+            local part = Instance.new("Part")
+            part.Name = name
+            part.Parent = rig
+        end
+        Instance.new("Shirt", rig)
+        Instance.new("Pants", rig)
+        local jacket = Instance.new("Accessory")
+        local handle = Instance.new("MeshPart")
+        handle.Name = "Handle"
+        handle.Parent = jacket
+        Instance.new("WrapLayer", handle)
+        jacket.Parent = rig
+        Uniform.dress(rig, "White")
+        assert(not rig:FindFirstChildOfClass("Shirt") and not rig:FindFirstChildOfClass("Pants") and not jacket.Parent)
+        local count = 0
+        for _, part in rig.KarateUniform:GetChildren() do
+            if part.Name == "Gi" then count += 1; assert(part.Color == Theme.White) end
+            if part.Name == "Belt" then assert(part.Color == Theme.Belts.White) end
+        end
+        assert(count == #names, "Incomplete gi coverage")
+        for _, name in names do assert(rig[name].Transparency == 1, "Avatar body can cover the gi") end
+        local original = rig.KarateUniform
+        Instance.new("Shirt", rig)
+        Uniform.dress(rig, "Yellow")
+        assert(rig.KarateUniform == original and not rig:FindFirstChildOfClass("Shirt"))
+        for _, part in original:GetChildren() do
+            if part.Name == "Belt" then assert(part.Color == Theme.Belts.Yellow) end
+        end
+        local torso = rig:FindFirstChild("Torso") or rig.UpperTorso
+        torso.Size += Vector3.new(1, 0.5, 0.5)
+        Uniform.dress(rig, "White")
+        assert(rig.KarateUniform ~= original, "Outfit did not refit after avatar scale changed")
+        for _, part in rig.KarateUniform:GetChildren() do
+            if part:GetAttribute("BodyPart") == torso.Name then
+                assert(part.Size == torso.Size + Vector3.new(0.08, 0.05, 0.08))
+            end
+        end
+        rig:Destroy()
+    end
+    pass("R6/R15 white gi coverage, starting belt, late clothing removal, and belt recoloring")
     require(game.ServerScriptService.PersistenceTests)()
     require(game.ServerScriptService.ObbyTests)()
     require(game.ServerScriptService.CreatureTests)()
@@ -74,6 +122,9 @@ local function run()
     first.leaderstats.KaratePoints.Value = 0
     eventually(function() return first:GetAttribute("MedalsEarned") == 0 end, 5, "Medals did not reflect authoritative stats")
     pass("server medal updates and player isolation")
+    command(first, "Animation")
+    command(second, "Animation")
+    pass("punch/kick poses on both joint types, pose restoration, and live arm rotation")
     local tutorial = require(game.ServerScriptService.Tutorial.Progress)
     local cases = {
         { 0, 0, 0, 0, 1 }, { 1, 0, 0, 0, 2 }, { 5, 1, 0, 0, 3 },

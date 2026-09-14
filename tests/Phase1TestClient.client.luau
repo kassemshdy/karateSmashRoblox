@@ -34,6 +34,57 @@ control.OnClientEvent:Connect(function(id, command, value)
                 while not fits() and os.clock() < deadline do task.wait(0.1) end
                 assert(fits(), "Action button off screen: " .. tostring(button.AbsolutePosition) .. " / " .. tostring(workspace.CurrentCamera.ViewportSize))
             end
+        elseif command == "Animation" then
+            local Pose = require(game.Players.LocalPlayer.PlayerScripts.Presentation.CombatPose)
+            for _, className in { "Motor6D", "AnimationConstraint" } do
+                local rig = Instance.new("Model")
+                rig.Parent = workspace
+                local joint = Instance.new(className)
+                joint.Name = "RightShoulder"
+                joint.Parent = rig
+                assert(Pose.play(rig, "Punch"), "Joint type not supported: " .. className)
+                task.wait(0.14)
+                assert(joint.Transform.Rotation ~= CFrame.identity, "Punch did not move " .. className)
+                task.wait(0.4)
+                assert(joint.Transform == CFrame.identity, "Punch did not restore joint")
+                joint.Name = "Right Hip"
+                assert(Pose.play(rig, "Kick"))
+                task.wait(0.14)
+                assert(joint.Transform.Rotation ~= CFrame.identity, "Kick did not move " .. className)
+                task.wait(0.55)
+                assert(joint.Transform == CFrame.identity, "Kick did not restore joint")
+                rig:Destroy()
+            end
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local root = character:WaitForChild("HumanoidRootPart", 15)
+            assert(root, "Live character did not spawn")
+            task.wait(1)
+            local function acceptedAttack(action)
+                local received = false
+                local feedback = ReplicatedStorage.KarateSmash.Feedback.OnClientEvent:Connect(function(userId, name)
+                    if userId == player.UserId and name == action then received = true end
+                end)
+                attack:FireServer(action)
+                local deadline = os.clock() + 5
+                while not received and os.clock() < deadline do task.wait() end
+                feedback:Disconnect()
+                assert(received, "No server-confirmed attack feedback")
+            end
+            local limb = character:FindFirstChild("RightUpperArm") or character:FindFirstChild("Right Arm")
+            local before = root.CFrame:ToObjectSpace(limb.CFrame)
+            acceptedAttack("Punch")
+            task.wait(0.14)
+            local after = root.CFrame:ToObjectSpace(limb.CFrame)
+            assert(before.Rotation ~= after.Rotation, "Live arm did not rotate")
+            task.wait(0.4)
+            limb = character:FindFirstChild("RightUpperLeg") or character:FindFirstChild("Right Leg")
+            before = root.CFrame:ToObjectSpace(limb.CFrame)
+            acceptedAttack("Kick")
+            task.wait(0.14)
+            after = root.CFrame:ToObjectSpace(limb.CFrame)
+            assert(before.Rotation ~= after.Rotation, "Live leg did not rotate")
+            task.wait(0.55)
         elseif command == "Audio" then
             local Audio = require(game.Players.LocalPlayer.PlayerScripts.Presentation.Audio)
             local group = game:GetService("SoundService"):WaitForChild("KarateEffects", 10)
