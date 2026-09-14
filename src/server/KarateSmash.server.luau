@@ -23,6 +23,7 @@ feedback.Name = "Feedback"
 feedback.Parent = remotes
 remotes.Parent = ReplicatedStorage
 
+local Profiles = require(script.Parent.Data.Profiles)
 local nextAttack = {}
 attackEvent.OnServerEvent:Connect(function(player, attackName)
     if typeof(attackName) ~= "string" then return end
@@ -32,6 +33,8 @@ attackEvent.OnServerEvent:Connect(function(player, attackName)
     if now < (nextAttack[player] or 0) or not Parts.root(player) then return end
     -- One shared cooldown prevents alternating attacks from bypassing the limit.
     nextAttack[player] = now + attack.Cooldown
+    attack = Profiles.attack(player, attackName, attack)
+    if not attack then return end
     local target = Targeting(player, attack)
     local result = Walls.hit(player, attack, target) or Dummy.hit(player, attack, target)
     for _, viewer in Players:GetPlayers() do

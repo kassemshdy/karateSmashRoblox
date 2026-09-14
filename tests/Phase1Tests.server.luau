@@ -32,6 +32,14 @@ local function run()
     require(game.ServerScriptService.PersistenceTests)()
     require(game.ServerScriptService.ObbyTests)()
     require(game.ServerScriptService.CreatureTests)()
+    require(game.ServerScriptService.UpgradeTests)()
+    local medals = require(game.ServerScriptService.Medals.Progress)
+    for _, case in { {0, 0, 0, 0}, {19, 2, 0, 0}, {20, 3, 0, 2}, {99, 3, 1, 3}, {100, 3, 1, 4}, {200, 8, 2, 4} } do
+        local values, earned = medals.evaluate(case[1], case[2], case[3])
+        assert(earned == case[4], "Wrong medal threshold")
+        assert(values.BlackBelt <= 100 and values.Collector <= 3 and values.Legendary <= 1)
+    end
+    pass("medal boundaries, multiple unlocks, and capped progress")
     eventually(function()
         local count = 0
         for _, player in Players:GetPlayers() do if ready[player] then count += 1 end end
@@ -59,6 +67,13 @@ local function run()
         assert(world:FindFirstChild("Base_" .. player.UserId), "Missing player base")
     end
     pass("two players spawn in dojo with separate bases and zero stats")
+    eventually(function() return first:GetAttribute("MedalsEarned") == 0 end, 5, "Missing medals")
+    first.leaderstats.KaratePoints.Value = 100
+    eventually(function() return first:GetAttribute("MedalsEarned") == 2 end, 5, "Point medals not updated")
+    assert(second:GetAttribute("MedalsEarned") == 0, "Medals leaked to another player")
+    first.leaderstats.KaratePoints.Value = 0
+    eventually(function() return first:GetAttribute("MedalsEarned") == 0 end, 5, "Medals did not reflect authoritative stats")
+    pass("server medal updates and player isolation")
     local tutorial = require(game.ServerScriptService.Tutorial.Progress)
     local cases = {
         { 0, 0, 0, 0, 1 }, { 1, 0, 0, 0, 2 }, { 5, 1, 0, 0, 3 },
@@ -270,6 +285,31 @@ local function run()
     command(first, "Attack", "Kick")
     assert(dummy:GetAttribute("HP") == Config.DummyHP, "Distant dummy hit accepted")
     pass("training dummy damage, shared cooldown, final-hit reward, no trophy, and reset")
+    local Profiles = require(game.ServerScriptService.Data.Profiles)
+    first.leaderstats.Coins.Value = 24
+    command(first, "BuyUpgrade", { Id = "Punch", Level = 0 })
+    assert(first:GetAttribute("Upgrade_Punch") == 0 and first.leaderstats.Coins.Value == 24)
+    command(first, "InvalidUpgrade")
+    first.leaderstats.Coins.Value = 1000
+    command(first, "BuyUpgrade", { Id = "Punch", Level = 0 })
+    assert(first:GetAttribute("Upgrade_Punch") == 1 and first.leaderstats.Coins.Value == 975)
+    command(first, "BuyUpgrade", { Id = "Punch", Level = 0 })
+    assert(first:GetAttribute("Upgrade_Punch") == 1 and first.leaderstats.Coins.Value == 975, "Duplicate purchase charged twice")
+    assert(second:GetAttribute("Upgrade_Punch") == 0, "Upgrade leaked to other player")
+    place(first, Vector3.new(28, 4, 24))
+    command(first, "Attack", "Punch")
+    assert(dummy:GetAttribute("HP") == Config.DummyHP - 12, "Server did not use upgraded damage")
+    for level = 1, 4 do assert(Profiles.buyUpgrade(first, "Punch", level)) end
+    assert(first.leaderstats.Coins.Value == 225 and first:GetAttribute("Upgrade_Punch") == 5)
+    assert(not Profiles.buyUpgrade(first, "Punch", 5), "Max level exceeded")
+    assert(first.leaderstats.Coins.Value == 225, "Max-level request charged coins")
+    assert(Profiles.buyUpgrade(first, "Kick", 0))
+    assert(Profiles.attack(first, "Kick", Config.Attacks.Kick).Damage == 30)
+    assert(Config.Attacks.Punch.Damage == 10 and Config.Attacks.Kick.Damage == 25, "Shared attack config mutated")
+    first:SetAttribute("DataReady", false)
+    assert(not Profiles.buyUpgrade(first, "Kick", 1), "Unloaded profile purchased")
+    first:SetAttribute("DataReady", true)
+    pass("upgrade purchases, insufficient funds, duplicate rejection, level caps, isolation, and authoritative damage")
     local expiring = Drops.spawn(world, Vector3.new(-25, 2.5, 2), first)
     eventually(function() return not expiring.Parent end, Config.DropLifetime + 3, "Drop did not expire")
     pass("uncollected drops expire")

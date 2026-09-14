@@ -11,6 +11,8 @@ control.OnClientEvent:Connect(function(id, command, value)
             local controls = player.PlayerGui:WaitForChild("KarateControls", 10)
             local guide = player.PlayerGui:WaitForChild("SenseiGuide", 10)
             assert(guide and guide:FindFirstChild("Dialogue"), "Sensei guide did not initialize")
+            local upgrades = player.PlayerGui:WaitForChild("KarateUpgrades", 10)
+            assert(upgrades and upgrades.Collection.List:FindFirstChild("BuyPunch"), "Upgrade UI missing")
             local creatureGuide = player.PlayerGui:WaitForChild("CreatureGuide", 10)
             assert(creatureGuide and creatureGuide:FindFirstChild("Carrying"), "Creature guide did not initialize")
             -- Keep the automated combat/prompt checks unobstructed by the welcome panel.
@@ -48,6 +50,11 @@ control.OnClientEvent:Connect(function(id, command, value)
             Audio.play("Collect")
             task.wait(0.2)
             assert(#group:GetChildren() == 5, "Sound instances leaked")
+        elseif command == "BuyUpgrade" then
+            local remote = ReplicatedStorage:WaitForChild("KarateUpgrades")
+            remote:FireServer(value.Id, value.Level, -999999)
+        elseif command == "InvalidUpgrade" then
+            ReplicatedStorage:WaitForChild("KarateUpgrades"):FireServer({ Damage = 9999 }, 0)
         elseif command == "Invalid" then
             attack:FireServer("Invalid", 999999)
             attack:FireServer({ Damage = 999999 })

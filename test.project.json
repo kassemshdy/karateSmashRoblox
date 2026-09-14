@@ -16,6 +16,9 @@
       },
       "CreatureTests": {
         "$path": "tests/CreatureTests.luau"
+      },
+      "UpgradeTests": {
+        "$path": "tests/UpgradeTests.luau"
       }
     },
     "ReplicatedStorage": {

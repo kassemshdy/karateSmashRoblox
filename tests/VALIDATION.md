@@ -183,3 +183,46 @@ startup error; the departure-test kick was expected. Builds and whitespace check
 pass. Speaker/headphone listening, loudness balance, and physical mute-button
 interaction remain manual checks; automated state checks do not establish sound
 quality or audibility on a particular device.
+
+## Phase 4 collectible creatures
+
+September 14, 2026, 11:33–11:35 UTC: all 22 test groups passed in the
+two-client Studio run, exit code 0. New checks cover rarity boundaries and income
+rates, version 1 migration without losing existing points/coins/trophies,
+saved collections and carried creatures across simulated storage rejoin,
+invalid species/count rejection, and stale-session protection.
+
+Live gameplay checks cover owner-only pickup, one-creature carrying, retention
+through an actual character respawn, matching owner-only pedestals, distance and
+obstruction checks, duplicate placement rejection, and species-based passive
+income. Existing combat, belts, tutorial, obby, dummy, audio, drop expiry, and
+departure cleanup regressions also pass.
+
+An initial run timed out waiting for two clients. A subsequent run exposed a
+test-camera issue when activating the obby exit after visiting a base; the test
+now aims at the exit before activating its prompt. The final complete run passed.
+No project-script errors, infinite-yield warnings, or sound-load failures were
+logged. One client logged Roblox's built-in ChatScript CoreGuiChatConnections
+startup error; the departure-test kick was expected.
+
+Phase 4 creature appearance and physical keyboard/mobile interaction still need
+manual playtesting. Storage tests use an injected in-memory adapter and do not
+verify live cloud persistence. Prior jump-difficulty and sound-listening manual
+checks also remain outstanding.
+
+
+## Medals
+
+September 14, 2026, 17:34–17:36 UTC: all 24 groups passed in the two-client
+Studio suite, exit code 0. New checks cover medal threshold boundaries, multiple
+unlocks, capped progress, live server updates, and isolation between players.
+The prior gameplay and persistence regressions also pass. Medals are derived
+from existing saved points and placed-creature counts; no save-schema change
+was introduced.
+
+Production builds include the medal modules and exclude test scripts. No project
+script errors, infinite-yield warnings, or sound-load failures were logged.
+One client logged Roblox's built-in ChatScript CoreGuiChatConnections startup
+error, and the departure-test kick was expected. Panel appearance, scrolling,
+and physical mouse/touch interaction remain manual checks; the automated suite
+does not verify the new panel's layout. Live cloud persistence remains unverified.

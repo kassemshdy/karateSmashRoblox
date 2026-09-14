@@ -5,6 +5,7 @@ local HttpService = game:GetService("HttpService")
 local Config = require(ReplicatedStorage.Shared.PersistenceConfig)
 local BeltConfig = require(ReplicatedStorage.Shared.BeltConfig)
 local Catalog = require(ReplicatedStorage.Shared.CreatureCatalog)
+local Upgrades = require(ReplicatedStorage.Shared.UpgradeConfig)
 local ProfileStore = require(script.Parent.ProfileStore)
 local memoryOnly = RunService:IsStudio() and not Config.EnableStudioDataStore
 local adapter
@@ -23,7 +24,7 @@ local closing = false
 local function snapshot(player)
     local stats = player.leaderstats
     local data = records[player].creatures
-    return { Version = 2, Points = stats.KaratePoints.Value, Coins = stats.Coins.Value,
+    return { Version = 3, Upgrades = table.clone(records[player].upgrades), Points = stats.KaratePoints.Value, Coins = stats.Coins.Value,
         Trophies = player:GetAttribute("Trophies") or 0,
         Creatures = table.clone(data.Creatures), Carried = data.Carried }
 end
@@ -58,6 +59,31 @@ function Profiles.placeCarried(player, id)
     data.Carried = false
     syncCreatures(player, data)
     return true
+end
+
+function Profiles.attack(player, name, base)
+    local record = records[player]
+    if not record or record.closing or not player:GetAttribute("DataReady") then return nil end
+    local attack = table.clone(base)
+    attack.Damage += record.upgrades[name] * Upgrades.Types[name].Bonus
+    return attack
+end
+
+function Profiles.buyUpgrade(player, id, expectedLevel)
+    local record = records[player]
+    if not record or record.closing or not player:GetAttribute("DataReady") then return false, "Progress is loading." end
+    if type(id) ~= "string" or not Upgrades.Types[id] then return false, "Unknown upgrade." end
+    local level = record.upgrades[id]
+    if expectedLevel ~= level then return false, "Upgrade changed. Try again." end
+    if level >= Upgrades.MaxLevel then return false, "Already at maximum level." end
+    local coins = player.leaderstats.Coins
+    local cost = Upgrades.cost(level)
+    if coins.Value < cost then return false, "You need more coins." end
+    -- No yields between checking, charging, and granting; repeated requests are stale.
+    coins.Value -= cost
+    record.upgrades[id] = level + 1
+    player:SetAttribute("Upgrade_" .. id, level + 1)
+    return true, Upgrades.Types[id].Name .. " upgraded!"
 end
 
 function Profiles.save(player, release)
@@ -120,8 +146,9 @@ function Profiles.load(player)
     belt.Parent = player
     player:SetAttribute("Trophies", data.Trophies)
     stats.Parent = player
-    records[player] = { key = key, token = token, expires = data.Session.Expires, busy = false,
+    records[player] = { key = key, token = token, expires = data.Session.Expires, busy = false, upgrades = table.clone(data.Upgrades),
         creatures = { Creatures = table.clone(data.Creatures), Carried = data.Carried } }
+    for _, id in Upgrades.Order do player:SetAttribute("Upgrade_" .. id, data.Upgrades[id]) end
     syncCreatures(player, records[player].creatures)
     player:SetAttribute("SaveStatus", memoryOnly and "Studio session" or "Saved")
     player:SetAttribute("DataReady", true)

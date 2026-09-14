@@ -13,7 +13,7 @@ return function()
     print("PHASE1_PASS: creature rarity boundaries and income rates")
 
     local migrated = ProfileStore.decode({ Version = 1, Points = 50, Coins = 80, Trophies = 7 })
-    assert(migrated.Version == 2 and migrated.Points == 50 and migrated.Coins == 80 and migrated.Trophies == 7)
+    assert(migrated.Version == 3 and migrated.Points == 50 and migrated.Coins == 80 and migrated.Trophies == 7)
     assert(not migrated.Carried and Catalog.totals(migrated.Creatures) == 0, "Legacy migration invented creatures")
     local memory = Memory.new()
     local store = ProfileStore.new(memory, { RetryAttempts = 3, LeaseSeconds = 180 }, function() return 100 end, function() end)

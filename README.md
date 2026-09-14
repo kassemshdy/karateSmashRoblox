@@ -3,7 +3,7 @@
 A child-friendly Roblox karate game built with Luau and Rojo. Practice, break
 walls, collect creatures, build your base income, and advance belts.
 
-## Current game — Phase 4
+## Current game — Phase 4 + medals and training upgrades
 
 1. Spawn in the dojo. Sensei explains the loop; press **E** or tap **Talk** near him
    to reopen the current lesson.
@@ -18,8 +18,8 @@ walls, collect creatures, build your base income, and advance belts.
    matching species pedestal. Duplicates stack on that pedestal with a count and
    total income display; each placed creature contributes to income.
 6. Earn coins every **5 seconds while connected**. Collect more creatures and
-   keep training toward higher belts. Offline earnings and coin spending are not
-   implemented.
+   spend coins on training upgrades and keep practicing toward higher belts.
+   Offline earnings are not implemented.
 
 | Creature | Rarity | Wall-drop chance | Coins per creature / 5 seconds |
 |---|---|---:|---:|
@@ -34,8 +34,27 @@ state, so a successful save/rejoin does not require claiming that creature again
 Each species count is bounded at 1,000,000; reaching the bound prevents further
 pickups of that species.
 
+Use **UPGRADES** to spend coins on **Hand Power** (punch) or **Leg Power** (kick).
+Each has five levels, costing **25, 50, 100, 200, 400 coins** in order.
+Each Hand Power level adds **2 damage** (10 → 20 at maximum); each Leg Power
+level adds **5 damage** (25 → 50). Reach, cooldowns, and point rewards stay the
+same. Purchases work anywhere while alive, use server-owned balances and levels,
+and reject stale duplicate requests. Upgrade levels persist with your profile.
+
+Use the **MEDALS** button to open a scrollable collection panel:
+
+- **Dedicated Student:** reach 20 Karate Points.
+- **Creature Collector:** place 3 creatures (duplicates count).
+- **Legendary Friend:** place a Sun Lion.
+- **Black Belt:** reach 100 Karate Points.
+
+Medals are calculated on the server from saved points and placed creatures, so
+returning players receive credit for existing progress. Carrying a creature does
+not count as placing it. These are in-game achievements, not Roblox platform
+badges, and they do not grant extra currency. No separate medal save is needed.
+
 Creature models use native Roblox parts. The reference poster sets the visual
-direction; cinematic artwork, additional worlds, medals, and championships are
+direction; cinematic artwork, additional worlds and championships are
 not implemented.
 
 ## Belts and challenges
@@ -90,16 +109,18 @@ are separate. A fixed pool of five Sound instances bounds audio resource use.
 ## Saving and migration
 
 Published games save points, coins, existing trophy counts, per-species placed
-counts, and the carried species. Belts and income are derived from those values.
+counts, the carried species, and both upgrade levels. Belts, medals, and income
+are derived from those values.
 Base positions are allocated again on each server. Unclaimed world drops are not
 saved.
 
-Schema **version 2** automatically migrates version-1 saves. Existing points,
+Schema **version 3** automatically migrates version-1 and version-2 saves, adding
+zero-level upgrades and preserving existing creatures and carrying state. Existing points,
 coins, and trophies are retained. Each old trophy still earns 1 coin per 5 seconds
 and has a separate base display. Migration does not reroll or invent creatures.
 The production store name remains **KarateSmash_PlayerData_v1**: the name is kept
-stable even though the record schema advanced. Older version-1 code rejects
-version-2 data, so do not roll back to an older build after migration.
+stable even though the record schema advanced. Older builds reject
+version-3 data, so do not roll back to an older build after migration.
 
 Autosave runs every 60 seconds with departure/shutdown saves. UpdateAsync session
 leases prevent concurrent or stale writers. Failed/corrupt loads disconnect the
@@ -158,5 +179,6 @@ run-in-roblox --place /tmp/karate-smash-tests.rbxlx --script tests/run-studio.lu
 
 `tests/VALIDATION.md` records actual runs and limitations. Local tests use injected
 in-memory storage for schema migration, retries, locking, and save/rejoin checks.
+The September 14 medals Studio run passed all 24 test groups with two clients.
 Live cloud persistence, physical mobile controls, jump difficulty, and sound
 loudness require separate manual/device checks.
