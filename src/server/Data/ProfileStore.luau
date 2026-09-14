@@ -1,4 +1,5 @@
 -- Storage adapter is injected so locking/failure paths can be tested offline.
+local Catalog = require(game.ReplicatedStorage.Shared.CreatureCatalog)
 local ProfileStore = {}
 ProfileStore.__index = ProfileStore
 
@@ -8,8 +9,8 @@ local function validNumber(value)
 end
 
 function ProfileStore.decode(value)
-    if value == nil then return { Version = 1, Points = 0, Coins = 0, Trophies = 0 } end
-    if type(value) ~= "table" or value.Version ~= 1 then return nil end
+    if value == nil then return { Version = 2, Points = 0, Coins = 0, Trophies = 0, Creatures = Catalog.empty(), Carried = false } end
+    if type(value) ~= "table" or (value.Version ~= 1 and value.Version ~= 2) then return nil end
     for _, key in { "Points", "Coins", "Trophies" } do
         if not validNumber(value[key]) then return nil end
     end
@@ -17,7 +18,20 @@ function ProfileStore.decode(value)
         if type(value.Session) ~= "table" or type(value.Session.Token) ~= "string"
             or not validNumber(value.Session.Expires) then return nil end
     end
-    return { Version = 1, Points = value.Points, Coins = value.Coins, Trophies = value.Trophies }
+    local counts, carried = Catalog.empty(), false
+    if value.Version == 2 then
+        if type(value.Creatures) ~= "table" then return nil end
+        for id, count in value.Creatures do
+            if not Catalog.Species[id] or not validNumber(count) or count > Catalog.MaxPerSpecies then return nil end
+            counts[id] = count
+        end
+        for _, id in Catalog.Order do if value.Creatures[id] == nil then return nil end end
+        if value.Carried ~= false and not Catalog.Species[value.Carried] then return nil end
+        carried = value.Carried
+    end
+    -- Legacy trophies retain their value and income. Never reroll saved creatures.
+    return { Version = 2, Points = value.Points, Coins = value.Coins, Trophies = value.Trophies,
+        Creatures = counts, Carried = carried }
 end
 
 function ProfileStore.new(adapter, config, clock, pause)

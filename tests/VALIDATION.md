@@ -142,3 +142,44 @@ The final logs contain only the expected departure-test kick, with no unexpected
 script errors or infinite-yield warnings. Production/test builds and whitespace
 checks pass; production excludes all test scripts. Manual checks remain for the
 course's visual layout, physical jumps, the exit prompt, and death/rejoin UX.
+
+
+Expanded obby verification (September 14): reran all 18 groups successfully,
+exit code 0, with a real `LoadCharacterAsync()` at the halfway checkpoint and
+client activation of the Return to dojo proximity prompt. The character resumed
+at its saved platform. The exit returned the player to the dojo with no extra
+points or coins. The final logs contained the expected departure-test kick and
+a Roblox built-in ChatScript CoreGuiChatConnections startup error on one client;
+no project-script error was logged.
+Manual course appearance and physical keyboard/mobile jumping remain unverified.
+
+
+## Training dummy
+
+September 14, 2026, 10:51–10:52 UTC: all 19 Studio test groups passed, exit code 0.
+The new group drives the real combat remote against the dummy and checks invalid
+requests, shared cooldown, damage, a single final-hit point reward, no collection
+increase, automatic reset, and out-of-range rejection. Existing wall, tutorial,
+obby, and persistence checks also pass after sharing server raycast targeting.
+
+Production/test builds and whitespace checks pass, and production excludes test
+scripts. No project-script error or infinite-yield warning was logged. Roblox's
+built-in ChatScript reported CoreGuiChatConnections startup errors on both clients;
+the departure-test kick was expected. Dummy appearance and physical touch input
+remain manual checks.
+
+
+## Sound feedback
+
+September 14, 2026, 10:57–10:59 UTC: all 20 test groups passed, exit code 0.
+Both clients initialize the five-instance sound pool and effects button. Tests
+verify mute/unmute, muted playback suppression, cancellation of pending belt
+notes, and stable pool size. Existing gameplay exercises confirmed hit/break,
+collection, and belt-change event paths.
+
+No sound-load failures, project-script errors, or infinite-yield warnings were
+logged. One client logged Roblox's built-in ChatScript CoreGuiChatConnections
+startup error; the departure-test kick was expected. Builds and whitespace checks
+pass. Speaker/headphone listening, loudness balance, and physical mute-button
+interaction remain manual checks; automated state checks do not establish sound
+quality or audibility on a particular device.

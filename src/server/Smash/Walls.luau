@@ -16,14 +16,8 @@ function Walls.start(world)
     end
 end
 
-function Walls.hit(player, attack)
-    local root = Parts.root(player)
-    if not root then return nil end
-    local params = RaycastParams.new()
-    params.FilterType = Enum.RaycastFilterType.Exclude
-    params.FilterDescendantsInstances = { player.Character }
-    -- The server chooses the first object in front of the character.
-    local result = workspace:Raycast(root.Position, root.CFrame.LookVector * attack.Range, params)
+function Walls.hit(player, attack, result)
+    if not Parts.root(player) then return nil end
     local record = result and records[result.Instance]
     if not record or record.hp <= 0 then return nil end
     local wall = result.Instance

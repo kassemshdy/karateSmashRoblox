@@ -16,14 +16,15 @@ task.spawn(function()
     while gui.Parent do
         local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         local nearby = root and root.Position.Z < -18 and math.abs(root.Position.X) < 20
-        panel.Visible = nearby == true
+        local carrying = player:GetAttribute("CarryingSpecies") ~= nil
+        panel.Visible = nearby == true and not carrying
         local camera = workspace.CurrentCamera
         if camera then panel.Size = UDim2.fromOffset(math.min(340, camera.ViewportSize.X - 24), 50) end
         text.Text = player:GetAttribute("ObbyStatus") or "Walk through the doorway to begin the balance trial"
         local hud = player.PlayerGui:FindFirstChild("KarateHUD")
         local objective = hud and hud:FindFirstChild("Objective")
         if objective and camera then
-            objective.Visible = not nearby and camera.ViewportSize.X >= 500 and camera.ViewportSize.Y >= 420
+            objective.Visible = not nearby and not carrying and camera.ViewportSize.X >= 500 and camera.ViewportSize.Y >= 420
         end
         task.wait(0.2)
     end

@@ -11,6 +11,8 @@ control.OnClientEvent:Connect(function(id, command, value)
             local controls = player.PlayerGui:WaitForChild("KarateControls", 10)
             local guide = player.PlayerGui:WaitForChild("SenseiGuide", 10)
             assert(guide and guide:FindFirstChild("Dialogue"), "Sensei guide did not initialize")
+            local creatureGuide = player.PlayerGui:WaitForChild("CreatureGuide", 10)
+            assert(creatureGuide and creatureGuide:FindFirstChild("Carrying"), "Creature guide did not initialize")
             -- Keep the automated combat/prompt checks unobstructed by the welcome panel.
             guide.Dialogue.Visible = false
             assert(hud and hud:FindFirstChild("ProgressCard") and hud:FindFirstChild("Wallet"), "HUD did not initialize")
@@ -30,6 +32,22 @@ control.OnClientEvent:Connect(function(id, command, value)
                 while not fits() and os.clock() < deadline do task.wait(0.1) end
                 assert(fits(), "Action button off screen: " .. tostring(button.AbsolutePosition) .. " / " .. tostring(workspace.CurrentCamera.ViewportSize))
             end
+        elseif command == "Audio" then
+            local Audio = require(game.Players.LocalPlayer.PlayerScripts.Presentation.Audio)
+            local group = game:GetService("SoundService"):WaitForChild("KarateEffects", 10)
+            assert(group and #group:GetChildren() == 5, "Missing bounded sound pool")
+            assert(game.Players.LocalPlayer.PlayerGui.KarateControls.Actions:FindFirstChild("ToggleSound"), "Missing mute control")
+            Audio.setMuted(true)
+            Audio.strike("Punch", { Broken = true })
+            Audio.belt()
+            task.wait(0.2)
+            assert(group.Volume == 0 and Audio.isMuted(), "Mute did not silence effects")
+            for _, sound in group:GetChildren() do assert(not sound.IsPlaying, "Muted sound played") end
+            Audio.setMuted(false)
+            assert(group.Volume > 0 and not Audio.isMuted(), "Unmute failed")
+            Audio.play("Collect")
+            task.wait(0.2)
+            assert(#group:GetChildren() == 5, "Sound instances leaked")
         elseif command == "Invalid" then
             attack:FireServer("Invalid", 999999)
             attack:FireServer({ Damage = 999999 })
@@ -37,7 +55,16 @@ control.OnClientEvent:Connect(function(id, command, value)
             for _ = 1, 50 do attack:FireServer("Punch", 999999, workspace) end
         elseif command == "Attack" then
             attack:FireServer(value)
-        elseif command == "Collect" then
+        elseif command == "LeaveTrial" then
+            local prompt = workspace.JawadKarateWorld.YellowBeltObby.Stage1.LeaveTrial
+            local root = game.Players.LocalPlayer.Character.HumanoidRootPart
+            workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+            workspace.CurrentCamera.CFrame = CFrame.lookAt(root.Position + Vector3.new(0, 3, 6), prompt.Parent.Position)
+            task.wait(0.2)
+            prompt:InputHoldBegin()
+            task.wait(0.15)
+            prompt:InputHoldEnd()
+        elseif command == "Collect" or command == "PlaceCreature" then
             local root = game.Players.LocalPlayer.Character.HumanoidRootPart
             workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
             workspace.CurrentCamera.CFrame = CFrame.lookAt(root.Position + Vector3.new(0, 3, 6), value.Position)

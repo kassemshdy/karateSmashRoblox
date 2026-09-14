@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 local Config = require(ReplicatedStorage.Shared.PersistenceConfig)
 local BeltConfig = require(ReplicatedStorage.Shared.BeltConfig)
+local Catalog = require(ReplicatedStorage.Shared.CreatureCatalog)
 local ProfileStore = require(script.Parent.ProfileStore)
 local memoryOnly = RunService:IsStudio() and not Config.EnableStudioDataStore
 local adapter
@@ -21,8 +22,42 @@ local closing = false
 
 local function snapshot(player)
     local stats = player.leaderstats
-    return { Version = 1, Points = stats.KaratePoints.Value, Coins = stats.Coins.Value,
-        Trophies = player:GetAttribute("Trophies") or 0 }
+    local data = records[player].creatures
+    return { Version = 2, Points = stats.KaratePoints.Value, Coins = stats.Coins.Value,
+        Trophies = player:GetAttribute("Trophies") or 0,
+        Creatures = table.clone(data.Creatures), Carried = data.Carried }
+end
+
+local function syncCreatures(player, data)
+    local count = Catalog.totals(data.Creatures)
+    player:SetAttribute("CreatureCount", count)
+    player:SetAttribute("CollectionCount", count + (player:GetAttribute("Trophies") or 0))
+    player:SetAttribute("CarryingSpecies", data.Carried or nil)
+    for _, id in Catalog.Order do player:SetAttribute("Owned_" .. id, data.Creatures[id]) end
+end
+function Profiles.creatureState(player)
+    local record = records[player]
+    if not record then return nil end
+    return table.clone(record.creatures.Creatures), record.creatures.Carried
+end
+function Profiles.tryCarry(player, id)
+    local record = records[player]
+    if not record or record.closing or not player:GetAttribute("DataReady") or not Catalog.Species[id] then return false end
+    local data = record.creatures
+    if data.Carried or data.Creatures[id] >= Catalog.MaxPerSpecies then return false end
+    data.Carried = id
+    syncCreatures(player, data)
+    return true
+end
+function Profiles.placeCarried(player, id)
+    local record = records[player]
+    if not record or record.closing or not player:GetAttribute("DataReady") or not Catalog.Species[id] then return false end
+    local data = record.creatures
+    if data.Carried ~= id or data.Creatures[id] >= Catalog.MaxPerSpecies then return false end
+    data.Creatures[id] += 1
+    data.Carried = false
+    syncCreatures(player, data)
+    return true
 end
 
 function Profiles.save(player, release)
@@ -85,7 +120,9 @@ function Profiles.load(player)
     belt.Parent = player
     player:SetAttribute("Trophies", data.Trophies)
     stats.Parent = player
-    records[player] = { key = key, token = token, expires = data.Session.Expires, busy = false }
+    records[player] = { key = key, token = token, expires = data.Session.Expires, busy = false,
+        creatures = { Creatures = table.clone(data.Creatures), Carried = data.Carried } }
+    syncCreatures(player, records[player].creatures)
     player:SetAttribute("SaveStatus", memoryOnly and "Studio session" or "Saved")
     player:SetAttribute("DataReady", true)
 end

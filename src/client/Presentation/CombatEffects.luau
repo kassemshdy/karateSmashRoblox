@@ -53,11 +53,11 @@ function Effects.play(player, action, result)
     text.TextColor3 = result.Broken and Theme.Gold or Theme.White
     text.TextStrokeTransparency = 0.2
     text.TextSize = result.Broken and 24 or 30
-    text.Text = result.Broken and "SMASH!" or ("−" .. result.Damage)
+    text.Text = result.Broken and (result.TargetType == "Dummy" and "GREAT FORM!" or "SMASH!") or ("−" .. result.Damage)
     text.Parent = gui
     TweenService:Create(gui, TweenInfo.new(0.7), { StudsOffset = Vector3.new(0, 4, 0) }):Play()
     TweenService:Create(text, TweenInfo.new(0.7), { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
-    if result.Broken then
+    if result.Broken and result.TargetType ~= "Dummy" then
         for index = 1, 10 do
             local angle = index * math.pi * 2 / 10
             local chip = effectPart(result.Position, Vector3.new(0.7, 0.45, 0.5), Color3.fromRGB(194, 85, 57))

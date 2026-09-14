@@ -1,4 +1,5 @@
 local UserInputService = game:GetService("UserInputService")
+local Audio = require(script.Parent.Audio)
 local Theme = require(game.ReplicatedStorage.Shared.Theme)
 return function(player, attack)
     local gui = Instance.new("ScreenGui")
@@ -33,6 +34,24 @@ return function(player, attack)
         stroke.Parent = button
         button.Activated:Connect(function() attack(name) end)
     end
+    local mute = Instance.new("TextButton")
+    mute.Name = "ToggleSound"
+    mute.Size = UDim2.fromOffset(86, 44)
+    mute.Position = UDim2.fromOffset(0, 80)
+    mute.BackgroundColor3 = Theme.Navy
+    mute.TextColor3 = Theme.White
+    mute.Font = Enum.Font.GothamBold
+    mute.TextSize = 11
+    mute.Parent = group
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = mute
+    local function label() mute.Text = Audio.isMuted() and "EFFECTS OFF" or "EFFECTS ON" end
+    mute.Activated:Connect(function()
+        Audio.setMuted(not Audio.isMuted())
+        label()
+    end)
+    label()
     -- Reserve space below the actions for Roblox's mobile jump control.
     -- Use less vertical space on landscape phones without shrinking hit targets.
     local function layout()

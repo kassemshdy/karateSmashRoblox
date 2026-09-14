@@ -13,6 +13,9 @@
       },
       "ObbyTests": {
         "$path": "tests/ObbyTests.luau"
+      },
+      "CreatureTests": {
+        "$path": "tests/CreatureTests.luau"
       }
     },
     "ReplicatedStorage": {

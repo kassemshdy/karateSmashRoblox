@@ -29,11 +29,11 @@ local function add(player)
     local function update()
         player:SetAttribute("TutorialStage", Progress.stage(stats.KaratePoints.Value,
             player:GetAttribute("WallsBrokenSession") or 0,
-            player:GetAttribute("Trophies") or 0, stats.Coins.Value))
+            player:GetAttribute("CollectionCount") or 0, stats.Coins.Value))
     end
     local connections = {
         stats.KaratePoints.Changed:Connect(update), stats.Coins.Changed:Connect(update),
-        player:GetAttributeChangedSignal("Trophies"):Connect(update),
+        player:GetAttributeChangedSignal("CollectionCount"):Connect(update),
         player:GetAttributeChangedSignal("WallsBrokenSession"):Connect(update),
     }
     player.AncestryChanged:Once(function()

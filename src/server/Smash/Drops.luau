@@ -2,20 +2,28 @@ local Players = game:GetService("Players")
 local Debris = game:GetService("Debris")
 local Config = require(game:GetService("ReplicatedStorage").Shared.SmashConfig)
 local Parts = require(script.Parent.Parts)
-local Bases = require(script.Parent.Bases)
+local Profiles = require(script.Parent.Parent.Data.Profiles)
+local Catalog = require(game.ReplicatedStorage.Shared.CreatureCatalog)
+local Visuals = require(script.Parent.Parent.World.CreatureVisuals)
+local random = Random.new()
 local Drops = {}
 
-function Drops.spawn(world, position, owner)
-    local drop = Parts.make(world, "TrophyDrop", Vector3.new(2, 2, 2), position, Color3.fromRGB(255, 210, 70))
+function Drops.spawn(world, position, owner, speciesId)
+    speciesId = speciesId or Catalog.roll(random)
+    local species = assert(Catalog.Species[speciesId], "Unknown creature")
+    local drop = Parts.make(world, "CreatureDrop", Vector3.new(2, 2, 2), position, Color3.fromRGB(255, 210, 70))
     drop.CanCollide = false
     drop.CanQuery = false
     drop.CanTouch = false
-    drop.Material = Enum.Material.Neon
+    drop.Transparency = 1
+    drop:SetAttribute("SpeciesId", speciesId)
+    drop:SetAttribute("Rarity", species.Rarity)
+    Visuals.create(drop, speciesId, CFrame.new(position) * CFrame.Angles(0, math.pi, 0))
     drop:SetAttribute("OwnerUserId", owner.UserId)
-    Parts.label(drop, owner.DisplayName .. "'s trophy\nCollect to earn passive coins")
+    Parts.label(drop, species.Rarity .. " " .. species.Name .. "\n" .. owner.DisplayName .. " • Carry home")
     local prompt = Instance.new("ProximityPrompt")
     prompt.ActionText = "Collect"
-    prompt.ObjectText = "Karate Trophy"
+    prompt.ObjectText = species.Name
     prompt.MaxActivationDistance = Config.CollectRange
     prompt.RequiresLineOfSight = true
     prompt.Parent = drop
@@ -36,7 +44,7 @@ function Drops.spawn(world, position, owner)
         local hit = workspace:Raycast(root.Position, drop.Position - root.Position, params)
         if hit and hit.Instance ~= drop then return end
         claimed = true
-        if Bases.addTrophy(player) then drop:Destroy() else claimed = false end
+        if Profiles.tryCarry(player, speciesId) then drop:Destroy() else claimed = false end
     end)
     Debris:AddItem(drop, Config.DropLifetime)
     return drop

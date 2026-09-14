@@ -74,8 +74,10 @@ function Scenery.base(model, position)
         end
     end
     part(model, "BaseBack", Vector3.new(14, 6, 0.5), position + Vector3.new(0, 3.5, 7), Theme.Cream)
-    for _, x in { -4.5, 0, 4.5 } do
-        part(model, "DisplayPedestal", Vector3.new(3.4, 1, 3.4), position + Vector3.new(x, 1, 2), Theme.Navy)
+    local pedestals = {}
+    for index, x in { -4.5, 0, 4.5 } do
+        local pedestal = part(model, "CreaturePedestal" .. index, Vector3.new(3.4, 1, 3.4), position + Vector3.new(x, 1, 2), Theme.Navy)
+        table.insert(pedestals, pedestal)
         part(model, "PedestalRim", Vector3.new(3.6, 0.2, 3.6), position + Vector3.new(x, 1.55, 2), Theme.Gold)
     end
     Scenery.roof(model, position + Vector3.new(0, 10, 0), 17, 16)
@@ -87,7 +89,7 @@ function Scenery.base(model, position)
         local handle = part(trophy, "CupHandle", Vector3.new(0.35, 1, 0.5), position + Vector3.new(side * 0.95, 3.45, 2), Theme.Gold, Enum.Material.Metal)
         handle.CFrame *= CFrame.Angles(0, 0, math.rad(side * 25))
     end
-    return trophy
+    return trophy, pedestals
 end
 
 function Scenery.showTrophy(trophy, visible)

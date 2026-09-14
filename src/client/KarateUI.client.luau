@@ -43,7 +43,7 @@ local wallet = UI.panel(gui, "Wallet", UDim2.fromOffset(208, 110), UDim2.new(1, 
 UI.text(wallet, "Caption", "YOUR DOJO EARNINGS", UDim2.fromOffset(14, 10), UDim2.fromOffset(180, 16), 11, Theme.Muted, true)
 local coinsText = UI.text(wallet, "Coins", "0 COINS", UDim2.fromOffset(14, 30), UDim2.fromOffset(180, 30), 25, Theme.Gold, true)
 local incomeText = UI.text(wallet, "Income", "+0 every 5s", UDim2.fromOffset(14, 65), UDim2.fromOffset(180, 17), 13, Theme.White)
-local trophiesText = UI.text(wallet, "Trophies", "0 trophies at your base", UDim2.fromOffset(14, 86), UDim2.fromOffset(180, 16), 11, Theme.Muted)
+local trophiesText = UI.text(wallet, "Trophies", "0 creatures at your base", UDim2.fromOffset(14, 86), UDim2.fromOffset(180, 16), 11, Theme.Muted)
 local mission = UI.panel(gui, "Objective", UDim2.fromOffset(345, 55), UDim2.new(0.5, -172, 1, -68))
 UI.text(mission, "Heading", "TRAIN  →  SMASH  →  COLLECT", UDim2.fromOffset(14, 8), UDim2.fromOffset(318, 20), 14, Theme.Gold, true)
 local hint = UI.text(mission, "Hint", "Face a brick wall • Click / F to punch • Q to kick", UDim2.fromOffset(14, 32), UDim2.fromOffset(318, 16), 11, Theme.White)
@@ -66,7 +66,7 @@ local function layout()
     incomeText.Visible = true
     trophiesText.Visible = true
     mission.Visible = not portrait and not short
-    hint.Text = UserInputService.TouchEnabled and "Face a wall and tap Punch or Kick. Collect the gold drop!" or "Face a brick wall • Click / F to punch • Q to kick"
+    hint.Text = UserInputService.TouchEnabled and "Face a wall and tap Punch or Kick. Carry your creature home!" or "Face a brick wall • Click / F to punch • Q to kick"
 end
 local cameraConnection
 local function watchCamera()
@@ -98,11 +98,12 @@ local function refresh()
     TweenService:Create(fill, TweenInfo.new(0.25), { Size = UDim2.fromScale(math.clamp(ratio, 0, 1), 1) }):Play()
     coinsText.Text = tostring(coins.Value) .. " COINS"
     incomeText.Text = string.format("+%d coins every %ds", player:GetAttribute("CoinsPerTick") or 0, SmashConfig.CoinInterval)
-    trophiesText.Text = string.format("%d trophies at your base", player:GetAttribute("Trophies") or 0)
+    trophiesText.Text = string.format("%d creatures • %d trophies", player:GetAttribute("CreatureCount") or 0, player:GetAttribute("Trophies") or 0)
 end
 points.Changed:Connect(refresh)
 coins.Changed:Connect(refresh)
 belt.Changed:Connect(refresh)
 player:GetAttributeChangedSignal("Trophies"):Connect(refresh)
+player:GetAttributeChangedSignal("CreatureCount"):Connect(refresh)
 player:GetAttributeChangedSignal("CoinsPerTick"):Connect(refresh)
 refresh()
